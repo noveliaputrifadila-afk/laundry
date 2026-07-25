@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Data Invoice
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Data Invoice</h2>
+        <p class="text-muted mb-0">
+            Kelola invoice pesanan laundry.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:invoice_create' %}"
+        class="btn btn-primary"
+    >
+        <i class="bi bi-plus-circle me-1"></i>
+        Tambah Invoice
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div
+            class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+            role="alert"
+        >
+            {{ message }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">
+                        Pencarian
+                    </label>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ query }}"
+                        class="form-control"
+                        placeholder="Nomor invoice, kode pesanan, atau pelanggan"
+                    >
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                    >
+                        <i class="bi bi-search me-1"></i>
+                        Cari
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3">
+        <strong>
+            {{ total_invoice }} invoice ditemukan
+        </strong>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nomor Invoice</th>
+                    <th>Pesanan</th>
+                    <th>Pelanggan</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Tanggal Terbit</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for invoice in invoices %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+                        <td>
+                            <strong>{{ invoice.nomor_invoice }}</strong>
+                        </td>
+
+                        <td>
+                            {{ invoice.pesanan.kode_pesanan }}
+                        </td>
+
+                        <td>
+                            {{ invoice.pesanan.pelanggan.get_full_name|default:invoice.pesanan.pelanggan.username }}
+                        </td>
+
+                        <td>
+                            Rp{{ invoice.total|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            {% if invoice.status == "lunas" %}
+                                <span class="badge bg-success">
+                                    {{ invoice.get_status_display }}
+                                </span>
+                            {% elif invoice.status == "diterbitkan" %}
+                                <span class="badge bg-primary">
+                                    {{ invoice.get_status_display }}
+                                </span>
+                            {% elif invoice.status == "dibatalkan" %}
+                                <span class="badge bg-danger">
+                                    {{ invoice.get_status_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    {{ invoice.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ invoice.tanggal_terbit|date:"d M Y H:i" }}
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'administrator:invoice_detail' invoice.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:invoice_update' invoice.pk %}"
+                                class="btn btn-sm btn-outline-warning"
+                            >
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="8"
+                            class="text-center text-muted py-5"
+                        >
+                            Belum ada data invoice.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Data Pengguna
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Data Pengguna
+        </h2>
+
+        <p class="text-muted mb-0">
+            Kelola seluruh akun pengguna aplikasi.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:user_create' %}"
+        class="btn btn-primary mt-3 mt-md-0"
+    >
+        <i class="bi bi-person-plus"></i>
+        Tambah Pengguna
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <label class="form-label">
+                        Pencarian
+                    </label>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ keyword }}"
+                        class="form-control"
+                        placeholder="Nama, username, email, atau nomor HP"
+                    >
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label">
+                        Role
+                    </label>
+
+                    <select
+                        name="role"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua role
+                        </option>
+
+                        {% for value, label in role_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if role_filter == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        <option
+                            value="aktif"
+                            {% if status_filter == "aktif" %}
+                                selected
+                            {% endif %}
+                        >
+                            Aktif
+                        </option>
+
+                        <option
+                            value="nonaktif"
+                            {% if status_filter == "nonaktif" %}
+                                selected
+                            {% endif %}
+                        >
+                            Nonaktif
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 col-lg-2">
+                    <label class="form-label">
+                        Verifikasi
+                    </label>
+
+                    <select
+                        name="verifikasi"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua
+                        </option>
+
+                        <option
+                            value="terverifikasi"
+                            {% if verifikasi_filter == "terverifikasi" %}
+                                selected
+                            {% endif %}
+                        >
+                            Terverifikasi
+                        </option>
+
+                        <option
+                            value="belum"
+                            {% if verifikasi_filter == "belum" %}
+                                selected
+                            {% endif %}
+                        >
+                            Belum
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 d-flex align-items-end">
+                    <div class="d-grid w-100">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-search"></i>
+                            Cari
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        {% if keyword or role_filter or status_filter or verifikasi_filter %}
+            <div class="mt-3">
+                <a
+                    href="{% url 'administrator:user_list' %}"
+                    class="btn btn-sm btn-outline-secondary"
+                >
+                    Hapus Filter
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <strong>
+            {{ jumlah_user }} pengguna ditemukan
+        </strong>
+    </div>
+
+    <div class="card-body p-0">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No.</th>
+                            <th>Pengguna</th>
+                            <th>Kontak</th>
+                            <th>Role</th>
+                            <th>Verifikasi</th>
+                            <th>Status</th>
+                            <th>Tanggal Daftar</th>
+                            <th class="text-end">
+                                Aksi
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for user_obj in page_obj %}
+                            <tr>
+                                <td>
+                                    {{ page_obj.start_index|add:forloop.counter0 }}
+                                </td>
+
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if user_obj.foto %}
+                                            <img
+                                                src="{{ user_obj.foto.url }}"
+                                                alt="{{ user_obj.username }}"
+                                                class="rounded-circle me-3"
+                                                width="42"
+                                                height="42"
+                                                style="object-fit: cover;"
+                                            >
+                                        {% else %}
+                                            <div
+                                                class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center me-3"
+                                                style="width: 42px; height: 42px;"
+                                            >
+                                                <i class="bi bi-person"></i>
+                                            </div>
+                                        {% endif %}
+
+                                        <div>
+                                            <strong>
+                                                {{ user_obj.get_full_name|default:user_obj.username }}
+                                            </strong>
+
+                                            <div class="small text-muted">
+                                                @{{ user_obj.username }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div>
+                                        {{ user_obj.email }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        {{ user_obj.nomor_hp|default:"-" }}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {% if user_obj.role == "administrator" %}
+                                        <span class="badge bg-danger">
+                                            {{ user_obj.get_role_display }}
+                                        </span>
+                                    {% elif user_obj.role == "kasir" %}
+                                        <span class="badge bg-info text-dark">
+                                            {{ user_obj.get_role_display }}
+                                        </span>
+                                    {% elif user_obj.role == "petugaslaundry" %}
+                                        <span class="badge bg-warning text-dark">
+                                            {{ user_obj.get_role_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-primary">
+                                            {{ user_obj.get_role_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if user_obj.is_verified %}
+                                        <span class="badge bg-success">
+                                            Terverifikasi
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">
+                                            Belum
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if user_obj.is_active %}
+                                        <span class="badge bg-success">
+                                            Aktif
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">
+                                            Nonaktif
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ user_obj.date_joined|date:"d M Y H:i" }}
+                                </td>
+
+                                <td class="text-end">
+                                    <a
+                                        href="{% url 'administrator:user_detail' user_obj.pk %}"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="Detail"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a
+                                        href="{% url 'administrator:user_update' user_obj.pk %}"
+                                        class="btn btn-sm btn-outline-warning"
+                                        title="Edit"
+                                    >
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td
+                                    colspan="8"
+                                    class="text-center py-5 text-muted"
+                                >
+                                    Tidak ada pengguna yang ditemukan.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+        <div class="card-footer bg-white">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&role={{ role_filter }}&status={{ status_filter }}&verifikasi={{ verifikasi_filter }}"
+                            >
+                                Sebelumnya
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            {{ page_obj.number }}
+                            dari
+                            {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&role={{ role_filter }}&status={{ status_filter }}&verifikasi={{ verifikasi_filter }}"
+                            >
+                                Berikutnya
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

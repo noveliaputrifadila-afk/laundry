@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detail Pelanggan
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-card{
+    border:0;
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(15,23,42,.07);
+}
+
+.info-label{
+    color:#64748b;
+    font-size:.85rem;
+}
+
+.info-value{
+    font-weight:600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <a href="{% url 'kasir:pelanggan_list' %}" class="text-decoration-none">
+            <i class="bi bi-arrow-left"></i>
+            Kembali
+        </a>
+
+        <h2 class="fw-bold mt-2">
+            Detail Pelanggan
+        </h2>
+
+        <p class="text-muted mb-0">
+            Informasi lengkap pelanggan.
+        </p>
+    </div>
+
+</div>
+
+<div class="row g-4">
+
+    <div class="col-lg-4">
+
+        <div class="card detail-card">
+
+            <div class="card-body text-center">
+
+                <div
+                    class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+                    style="width:90px;height:90px;font-size:36px;"
+                >
+                    {{ pelanggan.first_name|first|default:pelanggan.username|first|upper }}
+                </div>
+
+                <h4 class="mb-1">
+                    {{ pelanggan.get_full_name|default:pelanggan.username }}
+                </h4>
+
+                <div class="text-muted">
+                    @{{ pelanggan.username }}
+                </div>
+
+                <hr>
+
+                {% if pelanggan.is_verified %}
+                    <span class="badge bg-success">
+                        Terverifikasi
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning">
+                        Menunggu Verifikasi
+                    </span>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-8">
+
+        <div class="card detail-card">
+
+            <div class="card-header">
+                <strong>Informasi Pelanggan</strong>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <div class="info-label">
+                            Nama Lengkap
+                        </div>
+
+                        <div class="info-value">
+                            {{ pelanggan.get_full_name|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-label">
+                            Username
+                        </div>
+
+                        <div class="info-value">
+                            {{ pelanggan.username }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-label">
+                            Email
+                        </div>
+
+                        <div class="info-value">
+                            {{ pelanggan.email|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-label">
+                            Nomor HP
+                        </div>
+
+                        <div class="info-value">
+                            {{ pelanggan.nomor_hp|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="info-label">
+                            Alamat
+                        </div>
+
+                        <div class="info-value">
+                            {{ pelanggan.alamat|default:"-" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-label">
+                            Bergabung
+                        </div>
+
+                        <div class="info-value">
+                            {{ pelanggan.date_joined|date:"d F Y H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="info-label">
+                            Status Akun
+                        </div>
+
+                        <div class="info-value">
+                            {% if pelanggan.is_active %}
+                                Aktif
+                            {% else %}
+                                Nonaktif
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="card detail-card mt-4">
+
+            <div class="card-header">
+                <strong>10 Pesanan Terakhir</strong>
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover mb-0">
+
+                    <thead>
+
+                        <tr>
+                            <th>Kode</th>
+                            <th>Tanggal</th>
+                            <th>Status</th>
+                            <th>Total</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for pesanan in pesanan_terbaru %}
+
+                        <tr>
+
+                            <td>
+                                {{ pesanan.kode_pesanan }}
+                            </td>
+
+                            <td>
+                                {{ pesanan.created_at|date:"d M Y" }}
+                            </td>
+
+                            <td>
+                                {{ pesanan.get_status_display }}
+                            </td>
+
+                            <td>
+                                Rp{{ pesanan.total_biaya|floatformat:0 }}
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="4" class="text-center text-muted py-4">
+                                Belum memiliki riwayat pesanan.
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

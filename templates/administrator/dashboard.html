@@ -1,0 +1,941 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Administrator{% endblock %}
+
+{% block content %}
+<style>
+    .dashboard-heading {
+        margin-bottom: 1.5rem;
+    }
+
+    .dashboard-heading h2 {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-card {
+        height: 100%;
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 26px rgba(15, 23, 42, 0.12);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        font-size: 1.35rem;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .stat-value {
+        font-size: 1.55rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0;
+    }
+
+    .dashboard-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+    }
+
+    .dashboard-card .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid #eef2f7;
+        padding: 1rem 1.25rem;
+    }
+
+    .chart-container {
+        position: relative;
+        min-height: 320px;
+    }
+
+    .service-rank {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #eef2ff;
+        color: #4f46e5;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .avatar-small {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #e0f2fe;
+        color: #0369a1;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .progress {
+        height: 7px;
+        border-radius: 10px;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 0.9rem 1rem;
+    }
+
+    .empty-state {
+        padding: 2.5rem 1rem;
+        text-align: center;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 2rem;
+        display: block;
+        margin-bottom: 0.75rem;
+    }
+</style>
+
+<div class="dashboard-heading d-flex flex-wrap justify-content-between align-items-start gap-3">
+    <div>
+        <h2>Dashboard Administrator</h2>
+        <p class="text-muted mb-0">
+            Ringkasan operasional Laundry Management System.
+        </p>
+    </div>
+
+    <div class="text-md-end">
+        <div class="fw-semibold">
+            {{ hari_ini|date:"l, d F Y" }}
+        </div>
+        <small class="text-muted">
+            Selamat datang, {{ request.user.get_full_name|default:request.user.username }}
+        </small>
+    </div>
+</div>
+
+<!-- ======================================================
+     KPI UTAMA
+======================================================= -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Pesanan Hari Ini</div>
+                    <h3 class="stat-value">{{ pesanan_hari_ini }}</h3>
+                    <small class="text-muted">Pesanan baru masuk</small>
+                </div>
+
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-bag-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Pendapatan Hari Ini</div>
+                    <h3 class="stat-value">
+                        Rp{{ pendapatan_hari_ini|floatformat:0 }}
+                    </h3>
+                    <small class="text-muted">Pembayaran berhasil</small>
+                </div>
+
+                <div class="stat-icon bg-success-subtle text-success">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Pendapatan Bulan Ini</div>
+                    <h3 class="stat-value">
+                        Rp{{ pendapatan_bulan_ini|floatformat:0 }}
+                    </h3>
+                    <small class="text-muted">Sejak awal bulan</small>
+                </div>
+
+                <div class="stat-icon bg-info-subtle text-info">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Pelanggan Aktif</div>
+                    <h3 class="stat-value">{{ pelanggan_aktif }}</h3>
+                    <small class="text-muted">Aktif dan terverifikasi</small>
+                </div>
+
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Sedang Diproses</div>
+                    <h3 class="stat-value">{{ laundry_diproses }}</h3>
+                    <small class="text-muted">Laundry aktif</small>
+                </div>
+
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Laundry Selesai</div>
+                    <h3 class="stat-value">{{ laundry_selesai }}</h3>
+                    <small class="text-muted">Total pesanan selesai</small>
+                </div>
+
+                <div class="stat-icon bg-success-subtle text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Invoice Belum Lunas</div>
+                    <h3 class="stat-value">{{ invoice_belum_dibayar }}</h3>
+                    <small class="text-muted">Perlu dipantau</small>
+                </div>
+
+                <div class="stat-icon bg-danger-subtle text-danger">
+                    <i class="bi bi-receipt"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Kendala Aktif</div>
+                    <h3 class="stat-value">{{ kendala_aktif }}</h3>
+                    <small class="text-muted">Belum diselesaikan</small>
+                </div>
+
+                <div class="stat-icon bg-danger-subtle text-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================
+     PERINGATAN OPERASIONAL
+======================================================= -->
+{% if pembayaran_menunggu or pesanan_belum_ditugaskan %}
+<div class="row g-3 mb-4">
+    {% if pembayaran_menunggu %}
+        <div class="col-md-6">
+            <div class="alert alert-warning border-0 shadow-sm mb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-hourglass-split fs-3"></i>
+
+                    <div class="flex-grow-1">
+                        <strong>{{ pembayaran_menunggu }} pembayaran</strong>
+                        <div>sedang menunggu verifikasi kasir.</div>
+                    </div>
+
+                    <a
+                        href="{% url 'administrator:pembayaran_list' %}"
+                        class="btn btn-sm btn-warning"
+                    >
+                        Periksa
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if pesanan_belum_ditugaskan %}
+        <div class="col-md-6">
+            <div class="alert alert-danger border-0 shadow-sm mb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-person-exclamation fs-3"></i>
+
+                    <div class="flex-grow-1">
+                        <strong>{{ pesanan_belum_ditugaskan }} pesanan</strong>
+                        <div>belum memiliki petugas laundry.</div>
+                    </div>
+
+                    <a
+                        href="{% url 'administrator:penugasan_list' %}"
+                        class="btn btn-sm btn-danger"
+                    >
+                        Tugaskan
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- ======================================================
+     CHART
+======================================================= -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="card dashboard-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Tren 7 Hari Terakhir</strong>
+                    <small class="text-muted d-block">
+                        Pendapatan dan jumlah pesanan
+                    </small>
+                </div>
+
+                <i class="bi bi-bar-chart-line fs-4 text-primary"></i>
+            </div>
+
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="pendapatanChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card dashboard-card h-100">
+            <div class="card-header">
+                <strong>Distribusi Status Pesanan</strong>
+                <small class="text-muted d-block">
+                    Seluruh status pesanan
+                </small>
+            </div>
+
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Data chart aman untuk JavaScript -->
+{{ label_pendapatan|json_script:"label-pendapatan" }}
+{{ data_pendapatan|json_script:"data-pendapatan" }}
+{{ data_pesanan_harian|json_script:"data-pesanan-harian" }}
+{{ label_status|json_script:"label-status" }}
+{{ data_status|json_script:"data-status" }}
+
+<!-- ======================================================
+     PESANAN TERBARU
+======================================================= -->
+<div class="card dashboard-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Pesanan Terbaru</strong>
+            <small class="text-muted d-block">
+                Delapan pesanan terakhir
+            </small>
+        </div>
+
+        <a
+            href="{% url 'administrator:pesanan_list' %}"
+            class="btn btn-sm btn-outline-primary"
+        >
+            Lihat Semua
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Kode</th>
+                    <th>Pelanggan</th>
+                    <th>Layanan</th>
+                    <th>Petugas</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Tanggal</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in pesanan_terbaru %}
+                    <tr>
+                        <td>
+                            <strong>{{ pesanan.kode_pesanan }}</strong>
+                        </td>
+
+                        <td>
+                            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+
+                            <small class="text-muted d-block">
+                                {{ pesanan.pelanggan.nomor_hp }}
+                            </small>
+                        </td>
+
+                        <td>
+                            {% for detail in pesanan.detail.all|slice:":2" %}
+                                <small class="d-block">
+                                    {{ detail.layanan.nama }}
+                                </small>
+                            {% empty %}
+                                <span class="text-muted">-</span>
+                            {% endfor %}
+                        </td>
+
+                        <td>
+                            {% if pesanan.petugas_laundry %}
+                                {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger">
+                                    Belum ditugaskan
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary">
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="fw-semibold">
+                            Rp{{ pesanan.total_biaya|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            {{ pesanan.created_at|date:"d M Y" }}
+                            <small class="text-muted d-block">
+                                {{ pesanan.created_at|date:"H:i" }}
+                            </small>
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'administrator:pesanan_detail' pesanan.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                Detail
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                Belum ada pesanan.
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ======================================================
+     TOP LAYANAN DAN PETUGAS
+======================================================= -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-header">
+                <strong>Top 5 Layanan</strong>
+                <small class="text-muted d-block">
+                    Berdasarkan jumlah transaksi
+                </small>
+            </div>
+
+            <div class="card-body">
+                {% for layanan in top_layanan %}
+                    <div class="d-flex align-items-center gap-3 {% if not forloop.last %}border-bottom pb-3 mb-3{% endif %}">
+                        <div class="service-rank">
+                            {{ forloop.counter }}
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold">
+                                {{ layanan.layanan__nama }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ layanan.jumlah_transaksi }} transaksi
+                                · {{ layanan.total_item|floatformat:2 }}
+                                {{ layanan.layanan__satuan }}
+                            </small>
+                        </div>
+
+                        <div class="text-end">
+                            <strong>
+                                Rp{{ layanan.total_pendapatan|floatformat:0 }}
+                            </strong>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-basket"></i>
+                        Data layanan belum tersedia.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-6">
+        <div class="card dashboard-card h-100">
+            <div class="card-header">
+                <strong>Performa Petugas</strong>
+                <small class="text-muted d-block">
+                    Berdasarkan tugas yang diselesaikan
+                </small>
+            </div>
+
+            <div class="card-body">
+                {% for petugas in top_petugas %}
+                    <div class="d-flex align-items-center gap-3 {% if not forloop.last %}border-bottom pb-3 mb-3{% endif %}">
+                        <div class="avatar-small">
+                            {{ petugas.username|first|upper }}
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between gap-2">
+                                <strong>
+                                    {{ petugas.get_full_name|default:petugas.username }}
+                                </strong>
+
+                                <span class="badge bg-success-subtle text-success">
+                                    {{ petugas.tugas_selesai }} selesai
+                                </span>
+                            </div>
+
+                            <small class="text-muted">
+                                {{ petugas.tugas_aktif }} tugas aktif dari
+                                {{ petugas.total_tugas }} total tugas
+                            </small>
+
+                            {% widthratio petugas.tugas_selesai petugas.total_tugas 100 as progress_petugas %}
+
+                            <div class="progress mt-2">
+                                <div
+                                    class="progress-bar"
+                                    role="progressbar"
+                                    style="width: {% if petugas.total_tugas %}{{ progress_petugas }}{% else %}0{% endif %}%"
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-person-workspace"></i>
+                        Belum ada data petugas.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================
+     INVOICE DAN KENDALA
+======================================================= -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-7">
+        <div class="card dashboard-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Invoice Belum Lunas</strong>
+                    <small class="text-muted d-block">
+                        Invoice yang perlu ditindaklanjuti
+                    </small>
+                </div>
+
+                <a
+                    href="{% url 'administrator:invoice_list' %}"
+                    class="btn btn-sm btn-outline-primary"
+                >
+                    Semua Invoice
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Pelanggan</th>
+                            <th>Total</th>
+                            <th>Jatuh Tempo</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for invoice in invoice_terbaru %}
+                            <tr>
+                                <td>
+                                    <strong>{{ invoice.nomor_invoice }}</strong>
+                                    <small class="text-muted d-block">
+                                        {{ invoice.pesanan.kode_pesanan }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    {{ invoice.pesanan.pelanggan.get_full_name|default:invoice.pesanan.pelanggan.username }}
+                                </td>
+
+                                <td class="fw-semibold">
+                                    Rp{{ invoice.total|floatformat:0 }}
+                                </td>
+
+                                <td>
+                                    {% if invoice.tanggal_jatuh_tempo %}
+                                        {{ invoice.tanggal_jatuh_tempo|date:"d M Y H:i" }}
+
+                                        {% if invoice.tanggal_jatuh_tempo < now %}
+                                            <span class="badge bg-danger d-block mt-1">
+                                                Terlambat
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-warning-subtle text-warning">
+                                        {{ invoice.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-check-circle"></i>
+                                        Tidak ada invoice tertunda.
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="card dashboard-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>Kendala Terbaru</strong>
+                    <small class="text-muted d-block">
+                        Kendala yang belum selesai
+                    </small>
+                </div>
+
+                <a
+                    href="{% url 'administrator:kendala_list' %}"
+                    class="btn btn-sm btn-outline-danger"
+                >
+                    Lihat Semua
+                </a>
+            </div>
+
+            <div class="card-body">
+                {% for kendala in kendala_terbaru %}
+                    <div class="{% if not forloop.last %}border-bottom pb-3 mb-3{% endif %}">
+                        <div class="d-flex justify-content-between gap-2">
+                            <strong>{{ kendala.judul }}</strong>
+
+                            <span class="badge bg-danger-subtle text-danger">
+                                {{ kendala.get_status_display }}
+                            </span>
+                        </div>
+
+                        <small class="text-muted d-block mt-1">
+                            {{ kendala.pesanan.kode_pesanan }}
+                            · {{ kendala.created_at|date:"d M Y H:i" }}
+                        </small>
+
+                        <p class="mb-0 mt-2 text-muted">
+                            {{ kendala.deskripsi|truncatechars:90 }}
+                        </p>
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-shield-check"></i>
+                        Tidak ada kendala aktif.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ======================================================
+     PESANAN TERLAMBAT
+======================================================= -->
+<div class="card dashboard-card">
+    <div class="card-header">
+        <strong>Pesanan Melewati Estimasi</strong>
+        <small class="text-muted d-block">
+            Pesanan belum selesai setelah estimasi berakhir
+        </small>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Pesanan</th>
+                    <th>Pelanggan</th>
+                    <th>Petugas</th>
+                    <th>Estimasi Selesai</th>
+                    <th>Status</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in pesanan_terlambat %}
+                    <tr>
+                        <td>
+                            <strong>{{ pesanan.kode_pesanan }}</strong>
+                        </td>
+
+                        <td>
+                            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                        </td>
+
+                        <td>
+                            {% if pesanan.petugas_laundry %}
+                                {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                            {% else %}
+                                <span class="text-danger">
+                                    Belum ditugaskan
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="text-danger fw-semibold">
+                                {{ pesanan.estimasi_selesai|date:"d M Y H:i" }}
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-warning-subtle text-warning">
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'administrator:monitoring_detail' pesanan.pk %}"
+                                class="btn btn-sm btn-outline-danger"
+                            >
+                                Pantau
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <i class="bi bi-clock-history"></i>
+                                Tidak ada pesanan yang melewati estimasi.
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const labelPendapatan = JSON.parse(
+            document.getElementById("label-pendapatan").textContent
+        );
+
+        const dataPendapatan = JSON.parse(
+            document.getElementById("data-pendapatan").textContent
+        );
+
+        const dataPesananHarian = JSON.parse(
+            document.getElementById("data-pesanan-harian").textContent
+        );
+
+        const labelStatus = JSON.parse(
+            document.getElementById("label-status").textContent
+        );
+
+        const dataStatus = JSON.parse(
+            document.getElementById("data-status").textContent
+        );
+
+        const pendapatanCanvas = document.getElementById("pendapatanChart");
+
+        if (pendapatanCanvas) {
+            new Chart(pendapatanCanvas, {
+                type: "bar",
+                data: {
+                    labels: labelPendapatan,
+                    datasets: [
+                        {
+                            label: "Pendapatan",
+                            data: dataPendapatan,
+                            yAxisID: "yPendapatan",
+                            borderRadius: 7,
+                            maxBarThickness: 42
+                        },
+                        {
+                            label: "Jumlah Pesanan",
+                            data: dataPesananHarian,
+                            type: "line",
+                            yAxisID: "yPesanan",
+                            tension: 0.35,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    if (context.dataset.yAxisID === "yPendapatan") {
+                                        return "Pendapatan: Rp" +
+                                            Number(context.raw).toLocaleString("id-ID");
+                                    }
+
+                                    return "Pesanan: " + context.raw;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        yPendapatan: {
+                            beginAtZero: true,
+                            position: "left",
+                            ticks: {
+                                callback: function (value) {
+                                    return "Rp" +
+                                        Number(value).toLocaleString("id-ID");
+                                }
+                            }
+                        },
+                        yPesanan: {
+                            beginAtZero: true,
+                            position: "right",
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        const statusCanvas = document.getElementById("statusChart");
+
+        if (statusCanvas) {
+            new Chart(statusCanvas, {
+                type: "doughnut",
+                data: {
+                    labels: labelStatus,
+                    datasets: [
+                        {
+                            data: dataStatus,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "62%",
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                boxWidth: 12,
+                                padding: 14
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

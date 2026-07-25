@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Riwayat Status{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Detail Riwayat Status</h2>
+        <p class="text-muted mb-0">
+            {{ pesanan.kode_pesanan }}
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a
+            href="{% url 'administrator:pesanan_detail' pesanan.pk %}"
+            class="btn btn-primary"
+        >
+            <i class="bi bi-receipt me-1"></i>
+            Detail Pesanan
+        </a>
+
+        <a
+            href="{% url 'administrator:riwayat_status_list' %}"
+            class="btn btn-outline-secondary"
+        >
+            <i class="bi bi-arrow-left me-1"></i>
+            Kembali
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Perubahan Status</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-center gap-3 py-4">
+                    {% if riwayat.status_lama %}
+                        <span class="badge bg-secondary fs-6 p-3">
+                            {{ riwayat.get_status_lama_display }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-light text-dark fs-6 p-3">
+                            Status Awal
+                        </span>
+                    {% endif %}
+
+                    <i class="bi bi-arrow-right fs-3 text-muted"></i>
+
+                    <span class="badge bg-primary fs-6 p-3">
+                        {{ riwayat.get_status_baru_display }}
+                    </span>
+                </div>
+
+                <hr>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Waktu Perubahan
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ riwayat.created_at|date:"d M Y H:i:s" }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Diubah Oleh
+                    </small>
+
+                    {% if riwayat.diubah_oleh %}
+                        <span class="fw-semibold">
+                            {{ riwayat.diubah_oleh.get_full_name|default:riwayat.diubah_oleh.username }}
+                        </span>
+
+                        <small class="text-muted d-block">
+                            {{ riwayat.diubah_oleh.get_role_display }}
+                        </small>
+                    {% else %}
+                        <span>Sistem</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <small class="text-muted d-block">
+                        Catatan
+                    </small>
+
+                    {% if riwayat.catatan %}
+                        <div class="border rounded p-3 mt-2 bg-light">
+                            {{ riwayat.catatan|linebreaksbr }}
+                        </div>
+                    {% else %}
+                        <span class="text-muted">Tidak ada catatan.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <strong>Informasi Pesanan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Kode Pesanan
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ pesanan.kode_pesanan }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Pelanggan
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Status Saat Ini
+                    </small>
+
+                    <span class="badge bg-primary">
+                        {{ pesanan.get_status_display }}
+                    </span>
+                </div>
+
+                <div>
+                    <small class="text-muted d-block">
+                        Petugas Laundry
+                    </small>
+
+                    {% if pesanan.petugas_laundry %}
+                        <span class="fw-semibold">
+                            {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                        </span>
+                    {% else %}
+                        <span class="text-muted">
+                            Belum ditugaskan
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <strong>Kronologi Status Pesanan</strong>
+            </div>
+
+            <div class="card-body">
+                {% for item in riwayat_pesanan %}
+                    <div class="d-flex gap-3 {% if not forloop.last %}border-bottom pb-4 mb-4{% endif %}">
+                        <div>
+                            <span
+                                class="d-flex align-items-center justify-content-center rounded-circle {% if item.pk == riwayat.pk %}bg-primary{% else %}bg-secondary{% endif %} text-white"
+                                style="width: 42px; height: 42px;"
+                            >
+                                <i class="bi bi-check2"></i>
+                            </span>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap justify-content-between gap-2">
+                                <div>
+                                    <strong>
+                                        {{ item.get_status_baru_display }}
+                                    </strong>
+
+                                    {% if item.pk == riwayat.pk %}
+                                        <span class="badge bg-primary ms-2">
+                                            Dipilih
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <small class="text-muted">
+                                    {{ item.created_at|date:"d M Y H:i" }}
+                                </small>
+                            </div>
+
+                            {% if item.status_lama %}
+                                <small class="text-muted d-block mt-1">
+                                    Dari {{ item.get_status_lama_display }}
+                                </small>
+                            {% endif %}
+
+                            {% if item.catatan %}
+                                <p class="mb-1 mt-2">
+                                    {{ item.catatan|linebreaksbr }}
+                                </p>
+                            {% endif %}
+
+                            <small class="text-muted">
+                                Oleh:
+                                {% if item.diubah_oleh %}
+                                    {{ item.diubah_oleh.get_full_name|default:item.diubah_oleh.username }}
+                                {% else %}
+                                    Sistem
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center text-muted py-5">
+                        Belum ada kronologi status.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Detail Metode Pembayaran
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Detail Metode Pembayaran
+        </h2>
+
+        <p class="text-muted mb-0">
+            Informasi metode pembayaran.
+        </p>
+    </div>
+
+    <div class="mt-3 mt-md-0">
+        <a
+            href="{% url 'administrator:metode_pembayaran_update' metode.pk %}"
+            class="btn btn-warning"
+        >
+            <i class="bi bi-pencil me-1"></i>
+            Edit
+        </a>
+
+        <a
+            href="{% url 'administrator:metode_pembayaran_list' %}"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Informasi Pembayaran
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Nama metode
+                    </div>
+
+                    <div class="col-sm-8">
+                        <strong>{{ metode.nama }}</strong>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Nomor rekening/akun
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if metode.nomor_rekening %}
+                            {{ metode.nomor_rekening }}
+                        {% else %}
+                            Tidak diperlukan
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Atas nama
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if metode.atas_nama %}
+                            {{ metode.atas_nama }}
+                        {% else %}
+                            Tidak diperlukan
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Instruksi
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if metode.instruksi %}
+                            {{ metode.instruksi|linebreaksbr }}
+                        {% else %}
+                            Tidak ada instruksi khusus.
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Status
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if metode.is_active %}
+                            <span class="badge bg-success">
+                                Aktif
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                Nonaktif
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Dibuat
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ metode.created_at|date:"d M Y H:i" }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4 text-muted">
+                        Diperbarui
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ metode.updated_at|date:"d M Y H:i" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Status Metode
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form
+                    method="post"
+                    action="{% url 'administrator:metode_pembayaran_toggle_active' metode.pk %}"
+                >
+                    {% csrf_token %}
+
+                    {% if metode.is_active %}
+                        <p class="text-muted">
+                            Metode ini dapat dipilih pelanggan.
+                        </p>
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger w-100"
+                            onclick="return confirm('Nonaktifkan metode pembayaran ini?')"
+                        >
+                            Nonaktifkan
+                        </button>
+                    {% else %}
+                        <p class="text-muted">
+                            Metode ini tidak dapat dipilih pelanggan.
+                        </p>
+
+                        <button
+                            type="submit"
+                            class="btn btn-success w-100"
+                            onclick="return confirm('Aktifkan metode pembayaran ini?')"
+                        >
+                            Aktifkan
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

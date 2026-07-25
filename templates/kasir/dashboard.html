@@ -1,0 +1,686 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Kasir{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-heading h2 {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-card,
+    .dashboard-card {
+        height: 100%;
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .stat-card {
+        transition: transform 0.2s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 14px;
+        font-size: 1.3rem;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .stat-value {
+        margin: 0.35rem 0 0.1rem;
+        font-size: 1.55rem;
+        font-weight: 700;
+    }
+
+    .dashboard-card {
+        overflow: hidden;
+    }
+
+    .dashboard-card .card-header {
+        padding: 1rem 1.25rem;
+        background: #fff;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .chart-container {
+        position: relative;
+        min-height: 310px;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 0.9rem 1rem;
+    }
+
+    .empty-state {
+        padding: 2.5rem 1rem;
+        color: #64748b;
+        text-align: center;
+    }
+
+    .empty-state i {
+        display: block;
+        margin-bottom: 0.75rem;
+        font-size: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-heading d-flex flex-wrap justify-content-between gap-3 mb-4">
+    <div>
+        <h2>Dashboard Kasir</h2>
+
+        <p class="text-muted mb-0">
+            Ringkasan transaksi dan pembayaran hari ini.
+        </p>
+    </div>
+
+    <div class="text-md-end">
+        <strong>{{ hari_ini|date:"l, d F Y" }}</strong>
+
+        <small class="text-muted d-block">
+            Kasir:
+            {{ request.user.get_full_name|default:request.user.username }}
+        </small>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Pesanan Hari Ini</div>
+                    <div class="stat-value">
+                        {{ pesanan_hari_ini }}
+                    </div>
+                    <small class="text-muted">
+                        Pesanan baru masuk
+                    </small>
+                </div>
+
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-bag-plus"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Pendapatan Hari Ini</div>
+                    <div class="stat-value">
+                        Rp{{ pendapatan_hari_ini|floatformat:0 }}
+                    </div>
+                    <small class="text-muted">
+                        Pembayaran berhasil
+                    </small>
+                </div>
+
+                <div class="stat-icon bg-success-subtle text-success">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Menunggu Verifikasi</div>
+                    <div class="stat-value">
+                        {{ pembayaran_menunggu }}
+                    </div>
+                    <small class="text-muted">
+                        Pembayaran pelanggan
+                    </small>
+                </div>
+
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="stat-label">Belum Dibayar</div>
+                    <div class="stat-value">
+                        {{ belum_dibayar }}
+                    </div>
+                    <small class="text-muted">
+                        Pesanan belum lunas
+                    </small>
+                </div>
+
+                <div class="stat-icon bg-danger-subtle text-danger">
+                    <i class="bi bi-receipt-cutoff"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-label">Invoice Hari Ini</div>
+                <div class="stat-value">{{ invoice_hari_ini }}</div>
+                <small class="text-muted">Invoice yang diterbitkan</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-label">Pembayaran Hari Ini</div>
+                <div class="stat-value">{{ pembayaran_hari_ini }}</div>
+                <small class="text-muted">Transaksi berhasil</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-label">Menunggu Konfirmasi</div>
+                <div class="stat-value">
+                    {{ pesanan_menunggu_konfirmasi }}
+                </div>
+                <small class="text-muted">Pesanan pelanggan</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="stat-label">Selesai Hari Ini</div>
+                <div class="stat-value">
+                    {{ pesanan_selesai_hari_ini }}
+                </div>
+                <small class="text-muted">Laundry selesai diproses</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if pembayaran_menunggu or pesanan_menunggu_konfirmasi %}
+<div class="row g-3 mb-4">
+    {% if pesanan_menunggu_konfirmasi %}
+        <div class="col-md-6">
+            <div class="alert alert-primary border-0 shadow-sm mb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-bag-check fs-3"></i>
+
+                    <div>
+                        <strong>
+                            {{ pesanan_menunggu_konfirmasi }}
+                            pesanan menunggu konfirmasi.
+                        </strong>
+
+                        <div>
+                            Periksa detail sebelum menerima pesanan.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if pembayaran_menunggu %}
+        <div class="col-md-6">
+            <div class="alert alert-warning border-0 shadow-sm mb-0">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-credit-card fs-3"></i>
+
+                    <div>
+                        <strong>
+                            {{ pembayaran_menunggu }}
+                            pembayaran menunggu verifikasi.
+                        </strong>
+
+                        <div>
+                            Periksa jumlah dan bukti pembayaran.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="row g-4 mb-4">
+    <div class="col-xl-8">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <strong>Transaksi Tujuh Hari Terakhir</strong>
+
+                <small class="text-muted d-block">
+                    Jumlah pesanan dan pendapatan
+                </small>
+            </div>
+
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="transaksiChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <strong>Status Pesanan</strong>
+
+                <small class="text-muted d-block">
+                    Distribusi seluruh pesanan
+                </small>
+            </div>
+
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{ label_grafik|json_script:"label-grafik" }}
+{{ data_pesanan|json_script:"data-pesanan" }}
+{{ data_pendapatan|json_script:"data-pendapatan" }}
+{{ label_status|json_script:"label-status" }}
+{{ data_status|json_script:"data-status" }}
+
+<div class="card dashboard-card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Pesanan Terbaru</strong>
+
+            <small class="text-muted d-block">
+                Delapan pesanan terakhir
+            </small>
+        </div>
+
+        <a href="#" class="btn btn-sm btn-outline-primary">
+            Lihat Semua
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Kode</th>
+                    <th>Pelanggan</th>
+                    <th>Layanan</th>
+                    <th>Status</th>
+                    <th>Pembayaran</th>
+                    <th>Total</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in pesanan_terbaru %}
+                    <tr>
+                        <td>
+                            <strong>{{ pesanan.kode_pesanan }}</strong>
+                        </td>
+
+                        <td>
+                            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+
+                            <small class="text-muted d-block">
+                                {{ pesanan.pelanggan.nomor_hp }}
+                            </small>
+                        </td>
+
+                        <td>
+                            {% for detail in pesanan.detail.all|slice:":2" %}
+                                <small class="d-block">
+                                    {{ detail.layanan.nama }}
+                                </small>
+                            {% empty %}
+                                <span class="text-muted">-</span>
+                            {% endfor %}
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary-subtle text-primary">
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if pesanan.status_pembayaran == "lunas" %}
+                                <span class="badge bg-success-subtle text-success">
+                                    {{ pesanan.get_status_pembayaran_display }}
+                                </span>
+                            {% elif pesanan.status_pembayaran == "belum_dibayar" %}
+                                <span class="badge bg-danger-subtle text-danger">
+                                    {{ pesanan.get_status_pembayaran_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning">
+                                    {{ pesanan.get_status_pembayaran_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="fw-semibold">
+                            Rp{{ pesanan.total_biaya|floatformat:0 }}
+                        </td>
+
+                        <td>
+                            {{ pesanan.created_at|date:"d M Y" }}
+
+                            <small class="text-muted d-block">
+                                {{ pesanan.created_at|date:"H:i" }}
+                            </small>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <i class="bi bi-inbox"></i>
+                                Belum ada pesanan.
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-7">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <strong>Pembayaran Terbaru</strong>
+
+                <small class="text-muted d-block">
+                    Riwayat pembayaran pelanggan
+                </small>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Kode</th>
+                            <th>Pelanggan</th>
+                            <th>Jumlah</th>
+                            <th>Metode</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for pembayaran in pembayaran_terbaru %}
+                            <tr>
+                                <td>
+                                    <strong>
+                                        {{ pembayaran.kode_pembayaran }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ pembayaran.pesanan.pelanggan.get_full_name|default:pembayaran.pesanan.pelanggan.username }}
+                                </td>
+
+                                <td class="fw-semibold">
+                                    Rp{{ pembayaran.jumlah|floatformat:0 }}
+                                </td>
+
+                                <td>
+                                    {{ pembayaran.metode_pembayaran.nama }}
+                                </td>
+
+                                <td>
+                                    {% if pembayaran.status == "berhasil" %}
+                                        <span class="badge bg-success-subtle text-success">
+                                            {{ pembayaran.get_status_display }}
+                                        </span>
+                                    {% elif pembayaran.status == "menunggu" %}
+                                        <span class="badge bg-warning-subtle text-warning">
+                                            {{ pembayaran.get_status_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger-subtle text-danger">
+                                            {{ pembayaran.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="bi bi-credit-card"></i>
+                                        Belum ada pembayaran.
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="card dashboard-card">
+            <div class="card-header">
+                <strong>Invoice Belum Lunas</strong>
+
+                <small class="text-muted d-block">
+                    Invoice yang perlu ditindaklanjuti
+                </small>
+            </div>
+
+            <div class="card-body">
+                {% for invoice in invoice_belum_lunas %}
+                    <div class="{% if not forloop.last %}border-bottom pb-3 mb-3{% endif %}">
+                        <div class="d-flex justify-content-between gap-3">
+                            <div>
+                                <strong>
+                                    {{ invoice.nomor_invoice }}
+                                </strong>
+
+                                <small class="text-muted d-block">
+                                    {{ invoice.pesanan.pelanggan.get_full_name|default:invoice.pesanan.pelanggan.username }}
+                                </small>
+                            </div>
+
+                            <div class="text-end">
+                                <strong>
+                                    Rp{{ invoice.total|floatformat:0 }}
+                                </strong>
+
+                                <span class="badge bg-warning-subtle text-warning d-block mt-1">
+                                    {{ invoice.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if invoice.tanggal_jatuh_tempo %}
+                            <small class="text-muted d-block mt-2">
+                                Jatuh tempo:
+                                {{ invoice.tanggal_jatuh_tempo|date:"d M Y H:i" }}
+                            </small>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-check-circle"></i>
+                        Tidak ada invoice tertunda.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const labelGrafik = JSON.parse(
+            document.getElementById("label-grafik").textContent
+        );
+
+        const dataPesanan = JSON.parse(
+            document.getElementById("data-pesanan").textContent
+        );
+
+        const dataPendapatan = JSON.parse(
+            document.getElementById("data-pendapatan").textContent
+        );
+
+        const labelStatus = JSON.parse(
+            document.getElementById("label-status").textContent
+        );
+
+        const dataStatus = JSON.parse(
+            document.getElementById("data-status").textContent
+        );
+
+        new Chart(
+            document.getElementById("transaksiChart"),
+            {
+                type: "bar",
+                data: {
+                    labels: labelGrafik,
+                    datasets: [
+                        {
+                            label: "Jumlah Pesanan",
+                            data: dataPesanan,
+                            yAxisID: "jumlah",
+                            borderRadius: 7
+                        },
+                        {
+                            label: "Pendapatan",
+                            data: dataPendapatan,
+                            type: "line",
+                            yAxisID: "pendapatan",
+                            tension: 0.35
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    if (
+                                        context.dataset.yAxisID ===
+                                        "pendapatan"
+                                    ) {
+                                        return "Pendapatan: Rp" +
+                                            Number(context.raw)
+                                                .toLocaleString("id-ID");
+                                    }
+
+                                    return "Pesanan: " + context.raw;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        jumlah: {
+                            beginAtZero: true,
+                            position: "left",
+                            ticks: {
+                                precision: 0
+                            }
+                        },
+                        pendapatan: {
+                            beginAtZero: true,
+                            position: "right",
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                callback: function (value) {
+                                    return "Rp" +
+                                        Number(value)
+                                            .toLocaleString("id-ID");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+        new Chart(
+            document.getElementById("statusChart"),
+            {
+                type: "doughnut",
+                data: {
+                    labels: labelStatus,
+                    datasets: [
+                        {
+                            data: dataStatus,
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: "62%",
+                    plugins: {
+                        legend: {
+                            position: "bottom",
+                            labels: {
+                                boxWidth: 12,
+                                padding: 12
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    });
+</script>
+{% endblock %}

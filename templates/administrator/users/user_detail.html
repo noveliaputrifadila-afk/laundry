@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Detail Pengguna
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Detail Pengguna
+        </h2>
+
+        <p class="text-muted mb-0">
+            Informasi akun {{ user_obj.username }}.
+        </p>
+    </div>
+
+    <div class="mt-3 mt-md-0">
+        <a
+            href="{% url 'administrator:user_update' user_obj.pk %}"
+            class="btn btn-warning"
+        >
+            <i class="bi bi-pencil"></i>
+            Edit
+        </a>
+
+        <a
+            href="{% url 'administrator:user_list' %}"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm text-center">
+            <div class="card-body p-4">
+                {% if user_obj.foto %}
+                    <img
+                        src="{{ user_obj.foto.url }}"
+                        alt="{{ user_obj.username }}"
+                        class="rounded-circle mb-3"
+                        width="130"
+                        height="130"
+                        style="object-fit: cover;"
+                    >
+                {% else %}
+                    <div
+                        class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center mx-auto mb-3"
+                        style="width: 130px; height: 130px;"
+                    >
+                        <i class="bi bi-person fs-1"></i>
+                    </div>
+                {% endif %}
+
+                <h4 class="fw-bold mb-1">
+                    {{ user_obj.get_full_name|default:user_obj.username }}
+                </h4>
+
+                <p class="text-muted">
+                    @{{ user_obj.username }}
+                </p>
+
+                <span class="badge bg-primary">
+                    {{ user_obj.get_role_display }}
+                </span>
+
+                {% if user_obj.is_active %}
+                    <span class="badge bg-success">
+                        Aktif
+                    </span>
+                {% else %}
+                    <span class="badge bg-secondary">
+                        Nonaktif
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mt-4">
+            <div class="card-body">
+                {% if user_obj.role == "pelanggan" and not user_obj.is_verified %}
+                    <form
+                        method="post"
+                        action="{% url 'administrator:user_verify' user_obj.pk %}"
+                        class="d-grid mb-2"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-success"
+                            onclick="return confirm('Verifikasi akun pelanggan ini?')"
+                        >
+                            <i class="bi bi-person-check"></i>
+                            Verifikasi Pelanggan
+                        </button>
+                    </form>
+                {% endif %}
+
+                {% if user_obj.pk != request.user.pk and not user_obj.is_superuser %}
+                    <form
+                        method="post"
+                        action="{% url 'administrator:user_toggle_active' user_obj.pk %}"
+                        class="d-grid"
+                    >
+                        {% csrf_token %}
+
+                        {% if user_obj.is_active %}
+                            <button
+                                type="submit"
+                                class="btn btn-danger"
+                                onclick="return confirm('Nonaktifkan akun ini?')"
+                            >
+                                <i class="bi bi-person-x"></i>
+                                Nonaktifkan Akun
+                            </button>
+                        {% else %}
+                            <button
+                                type="submit"
+                                class="btn btn-success"
+                                onclick="return confirm('Aktifkan kembali akun ini?')"
+                            >
+                                <i class="bi bi-person-check"></i>
+                                Aktifkan Akun
+                            </button>
+                        {% endif %}
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Informasi Pengguna
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Username
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ user_obj.username }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Nama lengkap
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ user_obj.get_full_name|default:"-" }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Email
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ user_obj.email|default:"-" }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Nomor HP
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ user_obj.nomor_hp|default:"-" }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Alamat
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ user_obj.alamat|default:"-"|linebreaksbr }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Hak akses
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ user_obj.get_role_display }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Verifikasi
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if user_obj.is_verified %}
+                            <span class="badge bg-success">
+                                Terverifikasi
+                            </span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">
+                                Belum diverifikasi
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Tanggal verifikasi
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if user_obj.verified_at %}
+                            {{ user_obj.verified_at|date:"d M Y H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Tanggal bergabung
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ user_obj.date_joined|date:"d M Y H:i" }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4 text-muted">
+                        Login terakhir
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if user_obj.last_login %}
+                            {{ user_obj.last_login|date:"d M Y H:i" }}
+                        {% else %}
+                            Belum pernah login
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

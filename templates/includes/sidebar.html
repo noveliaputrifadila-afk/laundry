@@ -1,0 +1,21 @@
+{% with namespace=request.resolver_match.namespace %}
+
+    {% if namespace == "administrator" %}
+
+        {% include "includes/sidebar_admin.html" %}
+
+    {% elif namespace == "kasir" %}
+
+        {% include "includes/sidebar_kasir.html" %}
+
+    {% elif namespace == "petugas" %}
+
+        {% include "includes/sidebar_petugas.html" %}
+
+    {% elif namespace == "pelanggan" %}
+
+        {% include "includes/sidebar_pelanggan.html" %}
+
+    {% endif %}
+
+{% endwith %}

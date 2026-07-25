@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Kendala{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Detail Kendala</h2>
+        <p class="text-muted mb-0">{{ kendala.pesanan.kode_pesanan }}</p>
+    </div>
+
+    <a href="{% url 'administrator:kendala_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between">
+                <strong>Informasi Kendala</strong>
+
+                {% if kendala.status == "dilaporkan" %}
+                    <span class="badge bg-danger">{{ kendala.get_status_display }}</span>
+                {% elif kendala.status == "ditindaklanjuti" %}
+                    <span class="badge bg-warning text-dark">{{ kendala.get_status_display }}</span>
+                {% else %}
+                    <span class="badge bg-success">{{ kendala.get_status_display }}</span>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <h4 class="fw-bold">{{ kendala.judul }}</h4>
+
+                <div class="bg-light rounded p-3 mt-3">
+                    {{ kendala.deskripsi|linebreaksbr }}
+                </div>
+
+                <div class="row g-4 mt-1">
+                    <div class="col-md-6">
+                        <small class="text-muted">Dilaporkan oleh</small>
+                        <div class="fw-semibold">
+                            {{ kendala.dilaporkan_oleh.get_full_name|default:kendala.dilaporkan_oleh.username }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">Tanggal laporan</small>
+                        <div class="fw-semibold">
+                            {{ kendala.created_at|date:"d M Y H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">Ditangani oleh</small>
+                        <div class="fw-semibold">
+                            {% if kendala.ditangani_oleh %}
+                                {{ kendala.ditangani_oleh.get_full_name|default:kendala.ditangani_oleh.username }}
+                            {% else %}
+                                Belum ditangani
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">Terakhir diperbarui</small>
+                        <div class="fw-semibold">
+                            {{ kendala.updated_at|date:"d M Y H:i" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if kendala.tanggapan_kasir %}
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <strong>Tanggapan/Penyelesaian</strong>
+                </div>
+
+                <div class="card-body">
+                    <div class="alert alert-info mb-0">
+                        {{ kendala.tanggapan_kasir|linebreaksbr }}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Informasi Pesanan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Kode pesanan</small>
+                    <div class="fw-semibold">
+                        {{ kendala.pesanan.kode_pesanan }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted">Pelanggan</small>
+                    <div class="fw-semibold">
+                        {{ kendala.pesanan.pelanggan.get_full_name|default:kendala.pesanan.pelanggan.username }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted">Petugas laundry</small>
+                    <div class="fw-semibold">
+                        {% if kendala.pesanan.petugas_laundry %}
+                            {{ kendala.pesanan.petugas_laundry.get_full_name|default:kendala.pesanan.petugas_laundry.username }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted">Status pesanan</small>
+                    <div class="fw-semibold">
+                        {{ kendala.pesanan.get_status_display }}
+                    </div>
+                </div>
+
+                <a
+                    href="{% url 'administrator:pesanan_detail' kendala.pesanan.pk %}"
+                    class="btn btn-outline-primary w-100"
+                >
+                    <i class="bi bi-receipt me-1"></i>
+                    Lihat Pesanan
+                </a>
+            </div>
+        </div>
+
+        {% if kendala.status != "selesai" %}
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <strong>Tindak Lanjut</strong>
+                </div>
+
+                <div class="card-body">
+                    <form
+                        method="post"
+                        action="{% url 'administrator:kendala_tindak_lanjut' kendala.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Tanggapan</label>
+                            <textarea
+                                name="tanggapan"
+                                class="form-control"
+                                rows="4"
+                                required
+                                placeholder="Masukkan tindakan atau tanggapan"
+                            >{{ kendala.tanggapan_kasir }}</textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-warning w-100"
+                            onclick="return confirm('Tindak lanjuti kendala ini?')"
+                        >
+                            <i class="bi bi-tools me-1"></i>
+                            Tindak Lanjuti
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <strong>Selesaikan Kendala</strong>
+                </div>
+
+                <div class="card-body">
+                    <form
+                        method="post"
+                        action="{% url 'administrator:kendala_selesaikan' kendala.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Penyelesaian akhir</label>
+                            <textarea
+                                name="tanggapan"
+                                class="form-control"
+                                rows="4"
+                                required
+                                placeholder="Jelaskan penyelesaian kendala"
+                            >{{ kendala.tanggapan_kasir }}</textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-success w-100"
+                            onclick="return confirm('Tandai kendala sebagai selesai?')"
+                        >
+                            <i class="bi bi-check-circle me-1"></i>
+                            Tandai Selesai
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <strong>Buka Kembali</strong>
+                </div>
+
+                <div class="card-body">
+                    <form
+                        method="post"
+                        action="{% url 'administrator:kendala_buka_kembali' kendala.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Alasan</label>
+                            <textarea
+                                name="alasan"
+                                class="form-control"
+                                rows="4"
+                                required
+                                placeholder="Alasan kendala dibuka kembali"
+                            ></textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-outline-warning w-100"
+                            onclick="return confirm('Buka kembali kendala ini?')"
+                        >
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            Buka Kembali
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

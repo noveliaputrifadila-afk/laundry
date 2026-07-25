@@ -1,0 +1,47 @@
+<nav class="top-navbar">
+    <div>
+        <h5 class="navbar-title">
+            {% if request.user.role == "administrator" %}
+                Administrator
+            {% elif request.user.role == "kasir" %}
+                Kasir
+            {% elif request.user.role == "petugas_laundry" %}
+                Petugas Laundry
+            {% elif request.user.role == "pelanggan" %}
+                Pelanggan
+            {% else %}
+                Laundry Management System
+            {% endif %}
+        </h5>
+
+        <small class="navbar-subtitle">
+            Laundry Management System
+        </small>
+    </div>
+
+    <div class="navbar-user">
+        <div class="user-avatar">
+            {{ request.user.username|first|upper }}
+        </div>
+
+        <div class="user-info">
+            <span class="user-name">
+                {{ request.user.get_full_name|default:request.user.username }}
+            </span>
+
+            <small>
+                {% if request.user.is_authenticated %}
+                    {{ request.user.get_role_display }}
+                {% endif %}
+            </small>
+        </div>
+
+        <a
+            href="{% url 'logout' %}"
+            class="btn btn-outline-danger btn-sm logout-button"
+        >
+            <i class="bi bi-box-arrow-right"></i>
+            Logout
+        </a>
+    </div>
+</nav>

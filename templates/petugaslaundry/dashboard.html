@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard Petugas Laundry
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-card,
+    .content-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .dashboard-card {
+        height: 100%;
+    }
+
+    .dashboard-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .dashboard-label {
+        color: #64748b;
+        font-size: 0.88rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .dashboard-value {
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .dashboard-icon {
+        align-items: center;
+        border-radius: 14px;
+        display: flex;
+        font-size: 1.35rem;
+        height: 50px;
+        justify-content: center;
+        width: 50px;
+    }
+
+    .content-card {
+        overflow: hidden;
+    }
+
+    .content-card .card-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1rem 1.25rem;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 0.9rem 1rem;
+        vertical-align: middle;
+    }
+
+    .status-progress {
+        height: 9px;
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Dashboard Petugas Laundry
+        </h2>
+
+        <p class="text-muted mb-0">
+            Selamat datang,
+            {{ request.user.get_full_name|default:request.user.username }}.
+            Berikut ringkasan pekerjaan Anda.
+        </p>
+    </div>
+
+    <div class="text-muted">
+        <i class="bi bi-calendar3 me-1"></i>
+        {{ hari_ini|date:"d F Y" }}
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card dashboard-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="dashboard-label">
+                        Total Tugas
+                    </div>
+
+                    <div class="dashboard-value">
+                        {{ total_tugas }}
+                    </div>
+                </div>
+
+                <div class="dashboard-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-clipboard-check"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card dashboard-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="dashboard-label">
+                        Belum Diproses
+                    </div>
+
+                    <div class="dashboard-value text-warning">
+                        {{ tugas_belum_diproses }}
+                    </div>
+                </div>
+
+                <div class="dashboard-icon bg-warning-subtle text-warning">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card dashboard-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="dashboard-label">
+                        Sedang Diproses
+                    </div>
+
+                    <div class="dashboard-value text-info">
+                        {{ tugas_sedang_diproses }}
+                    </div>
+                </div>
+
+                <div class="dashboard-icon bg-info-subtle text-info">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card dashboard-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="dashboard-label">
+                        Tugas Selesai
+                    </div>
+
+                    <div class="dashboard-value text-success">
+                        {{ tugas_selesai }}
+                    </div>
+
+                    <small class="text-muted">
+                        Hari ini: {{ tugas_selesai_hari_ini }}
+                    </small>
+                </div>
+
+                <div class="dashboard-icon bg-success-subtle text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="row g-4">
+
+    <div class="col-xl-8">
+        <div class="card content-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="mb-1 fw-bold">
+                        Tugas Aktif
+                    </h5>
+
+                    <small class="text-muted">
+                        Pesanan yang perlu segera diproses.
+                    </small>
+                </div>
+
+                <a href="#" class="btn btn-sm btn-outline-primary">
+                    Lihat Semua
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Kode</th>
+                            <th>Pelanggan</th>
+                            <th>Status</th>
+                            <th>Estimasi</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for pesanan in tugas_aktif %}
+                            <tr>
+                                <td class="fw-semibold">
+                                    {{ pesanan.kode_pesanan }}
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">
+                                        {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                                    </div>
+
+                                    <small class="text-muted">
+                                        {{ pesanan.pelanggan.nomor_hp|default:"-" }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    {% if pesanan.status == "menunggu_antrian" or pesanan.status == "diterima" %}
+                                        <span class="badge bg-warning-subtle text-warning">
+                                            {{ pesanan.get_status_display }}
+                                        </span>
+
+                                    {% elif pesanan.status == "siap_diambil" or pesanan.status == "siap_diantar" %}
+                                        <span class="badge bg-success-subtle text-success">
+                                            {{ pesanan.get_status_display }}
+                                        </span>
+
+                                    {% else %}
+                                        <span class="badge bg-info-subtle text-info">
+                                            {{ pesanan.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if pesanan.estimasi_selesai %}
+                                        {{ pesanan.estimasi_selesai|date:"d M Y H:i" }}
+                                    {% else %}
+                                        <span class="text-muted">
+                                            Belum ditentukan
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-center">
+                                    <a
+                                        href="#"
+                                        class="btn btn-sm btn-outline-primary"
+                                        title="Lihat detail tugas"
+                                    >
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+
+                        {% empty %}
+                            <tr>
+                                <td
+                                    colspan="5"
+                                    class="text-center text-muted py-5"
+                                >
+                                    <i class="bi bi-check2-circle fs-1 d-block mb-2"></i>
+                                    Tidak ada tugas aktif.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card content-card h-100">
+            <div class="card-header">
+                <h5 class="mb-1 fw-bold">
+                    Statistik Status
+                </h5>
+
+                <small class="text-muted">
+                    Ringkasan seluruh tugas Anda.
+                </small>
+            </div>
+
+            <div class="card-body">
+                {% for statistik in statistik_status %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">
+                                {{ statistik.label }}
+                            </span>
+
+                            <strong>
+                                {{ statistik.jumlah }}
+                            </strong>
+                        </div>
+
+                        <div class="progress status-progress">
+                            {% if total_tugas > 0 %}
+                                <div
+                                    class="progress-bar"
+                                    role="progressbar"
+                                    style="width: {% widthratio statistik.jumlah total_tugas 100 %}%"
+                                ></div>
+                            {% else %}
+                                <div
+                                    class="progress-bar"
+                                    role="progressbar"
+                                    style="width: 0%"
+                                ></div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                {% empty %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-bar-chart fs-1 d-block mb-2"></i>
+                        Belum ada statistik tugas.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card content-card mt-4">
+    <div class="card-header">
+        <h5 class="mb-1 fw-bold">
+            Tugas Terbaru
+        </h5>
+
+        <small class="text-muted">
+            Lima pesanan terbaru yang ditugaskan kepada Anda.
+        </small>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Kode Pesanan</th>
+                    <th>Tanggal Masuk</th>
+                    <th>Pelanggan</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in tugas_terbaru %}
+                    <tr>
+                        <td class="fw-semibold">
+                            {{ pesanan.kode_pesanan }}
+                        </td>
+
+                        <td>
+                            {{ pesanan.created_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+                            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                        </td>
+
+                        <td>
+                            {{ pesanan.get_status_display }}
+                        </td>
+
+                        <td class="fw-semibold">
+                            Rp{{ pesanan.total_biaya|floatformat:0 }}
+                        </td>
+                    </tr>
+
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="5"
+                            class="text-center text-muted py-5"
+                        >
+                            Belum ada tugas yang diberikan.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

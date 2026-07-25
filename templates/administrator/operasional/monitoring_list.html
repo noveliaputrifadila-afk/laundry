@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Monitoring Proses Laundry{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Monitoring Proses Laundry</h2>
+        <p class="text-muted mb-0">
+            Pantau progres pengerjaan seluruh pesanan laundry.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:penugasan_list' %}"
+        class="btn btn-primary"
+    >
+        <i class="bi bi-person-check me-1"></i>
+        Atur Penugasan
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+            {{ message }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Total Pesanan</small>
+                        <h3 class="fw-bold mb-0 mt-2">
+                            {{ total_pesanan }}
+                        </h3>
+                    </div>
+
+                    <i class="bi bi-basket fs-2 text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Dengan Petugas</small>
+                        <h3 class="fw-bold mb-0 mt-2 text-success">
+                            {{ total_dengan_petugas }}
+                        </h3>
+                    </div>
+
+                    <i class="bi bi-person-check fs-2 text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="text-muted">Belum Ada Petugas</small>
+                        <h3 class="fw-bold mb-0 mt-2 text-danger">
+                            {{ total_belum_petugas }}
+                        </h3>
+                    </div>
+
+                    <i class="bi bi-person-exclamation fs-2 text-danger"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if status_cards %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <strong>Ringkasan Status</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                {% for item in status_cards %}
+                    <div class="col-6 col-md-4 col-xl-3">
+                        <a
+                            href="?status={{ item.value }}"
+                            class="text-decoration-none"
+                        >
+                            <div class="border rounded p-3 h-100">
+                                <small class="text-muted d-block">
+                                    {{ item.label }}
+                                </small>
+
+                                <span class="fs-4 fw-bold text-dark">
+                                    {{ item.jumlah }}
+                                </span>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-4">
+                    <label class="form-label">
+                        Pencarian
+                    </label>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ query }}"
+                        class="form-control"
+                        placeholder="Kode pesanan, pelanggan, atau petugas"
+                    >
+                </div>
+
+                <div class="col-lg-3">
+                    <label class="form-label">
+                        Status Proses
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-3">
+                    <label class="form-label">
+                        Petugas Laundry
+                    </label>
+
+                    <select
+                        name="petugas"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua petugas
+                        </option>
+
+                        {% for petugas in petugas_list %}
+                            <option
+                                value="{{ petugas.pk }}"
+                                {% if selected_petugas == petugas.pk|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ petugas.get_full_name|default:petugas.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <div class="d-grid gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-search me-1"></i>
+                            Filter
+                        </button>
+
+                        <a
+                            href="{% url 'administrator:monitoring_list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <strong>Daftar Proses Laundry</strong>
+
+        <span class="text-muted">
+            {{ page_obj.paginator.count }} data
+        </span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Pesanan</th>
+                    <th>Pelanggan</th>
+                    <th>Petugas</th>
+                    <th>Status</th>
+                    <th>Diperbarui</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in pesanan_list %}
+                    <tr>
+                        <td>
+                            {{ page_obj.start_index|add:forloop.counter0 }}
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ pesanan.kode_pesanan }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ pesanan.created_at|date:"d M Y H:i" }}
+                            </small>
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                            </div>
+
+                            {% if pesanan.pelanggan.no_hp %}
+                                <small class="text-muted">
+                                    {{ pesanan.pelanggan.no_hp }}
+                                </small>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if pesanan.petugas_laundry %}
+                                <div class="fw-semibold">
+                                    {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                                </div>
+
+                                <small class="text-success">
+                                    Ditugaskan
+                                </small>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    Belum ditugaskan
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {{ pesanan.updated_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'administrator:monitoring_detail' pesanan.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                <i class="bi bi-eye me-1"></i>
+                                Pantau
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="7"
+                            class="text-center text-muted py-5"
+                        >
+                            <i class="bi bi-inboxes fs-1 d-block mb-3"></i>
+                            Tidak ada proses laundry yang ditemukan.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}&q={{ query|urlencode }}&status={{ selected_status }}&petugas={{ selected_petugas }}"
+                    >
+                        Sebelumnya
+                    </a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.next_page_number }}&q={{ query|urlencode }}&status={{ selected_status }}&petugas={{ selected_petugas }}"
+                    >
+                        Berikutnya
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

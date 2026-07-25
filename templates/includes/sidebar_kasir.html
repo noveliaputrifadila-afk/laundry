@@ -1,0 +1,162 @@
+{% with url_name=request.resolver_match.url_name %}
+
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-basket2-fill"></i>
+            </div>
+
+            <div>
+                <h4>Laundry</h4>
+                <small>Management System</small>
+            </div>
+        </div>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a
+            href="{% url 'kasir:dashboard' %}"
+            class="nav-link {% if url_name == 'dashboard' %}active{% endif %}"
+        >
+            <i class="bi bi-grid-1x2-fill"></i>
+            <span>Dashboard</span>
+        </a>
+
+        <div class="sidebar-group">
+            <a
+                class="nav-link sidebar-toggle
+                {% if 'pesanan_' in url_name or 'invoice_' in url_name or 'pembayaran_' in url_name %}
+                    active
+                {% endif %}"
+                data-bs-toggle="collapse"
+                href="#menuTransaksiKasir"
+                role="button"
+                aria-expanded="
+                {% if 'pesanan_' in url_name or 'invoice_' in url_name or 'pembayaran_' in url_name %}
+                    true
+                {% else %}
+                    false
+                {% endif %}"
+                aria-controls="menuTransaksiKasir"
+            >
+                <i class="bi bi-receipt-cutoff"></i>
+                <span>Transaksi</span>
+                <i class="bi bi-chevron-down toggle-icon"></i>
+            </a>
+
+            <div
+                id="menuTransaksiKasir"
+                class="collapse
+                {% if 'pesanan_' in url_name or 'invoice_' in url_name or 'pembayaran_' in url_name %}
+                    show
+                {% endif %}"
+            >
+                <div class="submenu">
+
+                    <a
+                        href="{% url 'kasir:pesanan_create' %}"
+                        class="submenu-link {% if url_name == 'pesanan_create' %}active{% endif %}"
+                    >
+                        <span class="submenu-dot"></span>
+                        Buat Pesanan
+                    </a>
+
+                    <a
+                        href="{% url 'kasir:pesanan_list' %}"
+                        class="submenu-link
+                        {% if url_name == 'pesanan_list' or url_name == 'pesanan_detail' %}
+                            active
+                        {% endif %}"
+                    >
+                        <span class="submenu-dot"></span>
+                        Daftar Pesanan
+                    </a>
+
+                    <a
+                        href="{% url 'kasir:invoice_list' %}"
+                        class="submenu-link {% if 'invoice_' in url_name %}active{% endif %}"
+                    >
+                        <span class="submenu-dot"></span>
+                        Invoice
+                    </a>
+
+                    <a
+                        href="{% url 'kasir:pembayaran_list' %}"
+                        class="submenu-link {% if 'pembayaran_' in url_name %}active{% endif %}"
+                    >
+                        <span class="submenu-dot"></span>
+                        Pembayaran
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar-group">
+            <a
+                class="nav-link sidebar-toggle
+                {% if 'pelanggan_' in url_name %}
+                    active
+                {% endif %}"
+                data-bs-toggle="collapse"
+                href="#menuPelangganKasir"
+                role="button"
+                aria-expanded="
+                {% if 'pelanggan_' in url_name %}
+                    true
+                {% else %}
+                    false
+                {% endif %}"
+                aria-controls="menuPelangganKasir"
+            >
+                <i class="bi bi-people-fill"></i>
+                <span>Pelanggan</span>
+                <i class="bi bi-chevron-down toggle-icon"></i>
+            </a>
+
+            <div
+                id="menuPelangganKasir"
+                class="collapse
+                {% if 'pelanggan_' in url_name %}
+                    show
+                {% endif %}"
+            >
+                <div class="submenu">
+
+                    <a
+                        href="{% url 'kasir:pelanggan_list' %}"
+                        class="submenu-link {% if 'pelanggan_' in url_name %}active{% endif %}"
+                    >
+                        <span class="submenu-dot"></span>
+                        Cari Pelanggan
+                    </a>
+
+                    <a
+                        href="{% url 'kasir:pelanggan_register' %}"
+                        class="submenu-link {% if url_name == 'pelanggan_register' %}active{% endif %}"
+                    >
+                        <span class="submenu-dot"></span>
+                        Registrasi Pelanggan
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+        <a
+            href="{% url 'kasir:riwayat_transaksi' %}"
+            class="nav-link {% if url_name == 'riwayat_transaksi' %}active{% endif %}"
+        >
+            <i class="bi bi-clock-history"></i>
+
+            <span>
+                Riwayat Transaksi
+            </span>
+        </a>
+
+    </nav>
+</aside>
+
+{% endwith %}

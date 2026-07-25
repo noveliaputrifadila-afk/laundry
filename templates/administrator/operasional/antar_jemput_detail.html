@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Antar Jemput{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Atur Antar Jemput</h2>
+        <p class="text-muted mb-0">
+            {{ pesanan.kode_pesanan }}
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:antar_jemput_list' %}"
+        class="btn btn-outline-secondary"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+            {{ message }}
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Informasi Pesanan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">Pelanggan</small>
+                    <strong>
+                        {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                    </strong>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">Nomor HP</small>
+                    <span>{{ pesanan.pelanggan.nomor_hp }}</span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">Status Pesanan</small>
+                    <span class="badge bg-primary">
+                        {{ pesanan.get_status_display }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">Biaya Antar Jemput</small>
+                    <strong>
+                        Rp{{ pesanan.biaya_antar_jemput|floatformat:0 }}
+                    </strong>
+                </div>
+
+                <div>
+                    <small class="text-muted d-block">Total Pesanan</small>
+                    <strong class="fs-5">
+                        Rp{{ pesanan.total_biaya|floatformat:0 }}
+                    </strong>
+                </div>
+
+                <hr>
+
+                <a
+                    href="{% url 'administrator:pesanan_detail' pesanan.pk %}"
+                    class="btn btn-outline-primary"
+                >
+                    Lihat Detail Pesanan
+                </a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <strong>Detail Barang</strong>
+            </div>
+
+            <div class="card-body">
+                {% for detail in pesanan.detail.all %}
+                    <div class="{% if not forloop.last %}border-bottom pb-3 mb-3{% endif %}">
+                        <strong>{{ detail.nama_barang }}</strong>
+                        <small class="text-muted d-block">
+                            {{ detail.layanan.nama }}
+                        </small>
+                        <small class="text-muted">
+                            {{ detail.jumlah }} {{ detail.get_satuan_display }}
+                        </small>
+                    </div>
+                {% empty %}
+                    <span class="text-muted">
+                        Belum ada detail barang.
+                    </span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <strong>Pengaturan Antar Jemput</strong>
+            </div>
+
+            <div class="card-body">
+                <form
+                    method="post"
+                    action="{% url 'administrator:antar_jemput_update' pesanan.pk %}"
+                >
+                    {% csrf_token %}
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Jenis Layanan
+                            </label>
+
+                            <select
+                                name="jenis_pengantaran"
+                                class="form-select"
+                                required
+                            >
+                                {% for value, label in jenis_choices %}
+                                    <option
+                                        value="{{ value }}"
+                                        {% if pesanan.jenis_pengantaran == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Area Layanan
+                            </label>
+
+                            <select
+                                name="area_layanan"
+                                class="form-select"
+                            >
+                                <option value="">Pilih area</option>
+
+                                {% for area in area_list %}
+                                    <option
+                                        value="{{ area.pk }}"
+                                        {% if pesanan.area_layanan_id == area.pk %}selected{% endif %}
+                                    >
+                                        {{ area.nama_area }}
+                                        — Antar Rp{{ area.biaya_antar|floatformat:0 }}
+                                        / Jemput Rp{{ area.biaya_jemput|floatformat:0 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">
+                                Petugas
+                            </label>
+
+                            <select
+                                name="petugas_laundry"
+                                class="form-select"
+                            >
+                                <option value="">
+                                    Belum ditugaskan
+                                </option>
+
+                                {% for petugas in petugas_list %}
+                                    <option
+                                        value="{{ petugas.pk }}"
+                                        {% if pesanan.petugas_laundry_id == petugas.pk %}selected{% endif %}
+                                    >
+                                        {{ petugas.get_full_name|default:petugas.username }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+
+                            <div class="form-text">
+                                Petugas ini juga menjadi petugas yang menangani pesanan.
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">
+                                Alamat Penjemputan
+                            </label>
+
+                            <textarea
+                                name="alamat_penjemputan"
+                                class="form-control"
+                                rows="3"
+                            >{{ pesanan.alamat_penjemputan }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Jadwal Penjemputan
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                name="tanggal_penjemputan"
+                                class="form-control"
+                                value="{% if pesanan.tanggal_penjemputan %}{{ pesanan.tanggal_penjemputan|date:'Y-m-d\TH:i' }}{% endif %}"
+                            >
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">
+                                Alamat Pengantaran
+                            </label>
+
+                            <textarea
+                                name="alamat_pengantaran"
+                                class="form-control"
+                                rows="3"
+                            >{{ pesanan.alamat_pengantaran }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">
+                                Jadwal Pengantaran
+                            </label>
+
+                            <input
+                                type="datetime-local"
+                                name="tanggal_pengambilan"
+                                class="form-control"
+                                value="{% if pesanan.tanggal_pengambilan %}{{ pesanan.tanggal_pengambilan|date:'Y-m-d\TH:i' }}{% endif %}"
+                            >
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">
+                                Catatan Operasional
+                            </label>
+
+                            <textarea
+                                name="catatan_kasir"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Petunjuk lokasi, nomor rumah, patokan, dan lainnya"
+                            >{{ pesanan.catatan_kasir }}</textarea>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">
+                                Biaya antar-jemput akan dihitung otomatis berdasarkan
+                                jenis layanan dan area yang dipilih.
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                onclick="return confirm('Simpan perubahan antar-jemput?')"
+                            >
+                                <i class="bi bi-check-circle me-1"></i>
+                                Simpan Pengaturan
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Riwayat Status Pesanan{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Riwayat Status Pesanan</h2>
+        <p class="text-muted mb-0">
+            Lihat seluruh perubahan status dan aktivitas operasional pesanan.
+        </p>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+            {{ message }}
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Total Riwayat</small>
+                <h3 class="fw-bold mb-0 mt-2">
+                    {{ total_riwayat }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Perubahan Hari Ini</small>
+                <h3 class="fw-bold mb-0 mt-2 text-primary">
+                    {{ total_hari_ini }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Oleh Petugas</small>
+                <h3 class="fw-bold mb-0 mt-2 text-success">
+                    {{ total_diperbarui_petugas }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Oleh Kasir</small>
+                <h3 class="fw-bold mb-0 mt-2 text-warning">
+                    {{ total_diperbarui_kasir }}
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-4">
+                    <label class="form-label">Pencarian</label>
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ query }}"
+                        class="form-control"
+                        placeholder="Kode pesanan, pelanggan, pengubah, atau catatan"
+                    >
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">Status Lama</label>
+                    <select name="status_lama" class="form-select">
+                        <option value="">Semua status</option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status_lama == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">Status Baru</label>
+                    <select name="status_baru" class="form-select">
+                        <option value="">Semua status</option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status_baru == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">Diubah Oleh</label>
+                    <select name="pengubah" class="form-select">
+                        <option value="">Semua pengguna</option>
+
+                        {% for pengguna in pengubah_list %}
+                            <option
+                                value="{{ pengguna.pk }}"
+                                {% if selected_pengubah == pengguna.pk|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ pengguna.get_full_name|default:pengguna.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search me-1"></i>
+                            Filter
+                        </button>
+
+                        <a
+                            href="{% url 'administrator:riwayat_status_list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <strong>Daftar Riwayat Status</strong>
+
+        <span class="text-muted">
+            {{ page_obj.paginator.count }} data
+        </span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Waktu</th>
+                    <th>Pesanan</th>
+                    <th>Pelanggan</th>
+                    <th>Perubahan Status</th>
+                    <th>Diubah Oleh</th>
+                    <th>Catatan</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for riwayat in riwayat_list %}
+                    <tr>
+                        <td>
+                            {{ page_obj.start_index|add:forloop.counter0 }}
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ riwayat.created_at|date:"d M Y" }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ riwayat.created_at|date:"H:i" }}
+                            </small>
+                        </td>
+
+                        <td>
+                            <a
+                                href="{% url 'administrator:pesanan_detail' riwayat.pesanan.pk %}"
+                                class="text-decoration-none fw-semibold"
+                            >
+                                {{ riwayat.pesanan.kode_pesanan }}
+                            </a>
+                        </td>
+
+                        <td>
+                            {{ riwayat.pesanan.pelanggan.get_full_name|default:riwayat.pesanan.pelanggan.username }}
+                        </td>
+
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                {% if riwayat.status_lama %}
+                                    <span class="badge bg-secondary">
+                                        {{ riwayat.get_status_lama_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">
+                                        Awal
+                                    </span>
+                                {% endif %}
+
+                                <i class="bi bi-arrow-right"></i>
+
+                                <span class="badge bg-primary">
+                                    {{ riwayat.get_status_baru_display }}
+                                </span>
+                            </div>
+                        </td>
+
+                        <td>
+                            {% if riwayat.diubah_oleh %}
+                                <div class="fw-semibold">
+                                    {{ riwayat.diubah_oleh.get_full_name|default:riwayat.diubah_oleh.username }}
+                                </div>
+
+                                <small class="text-muted">
+                                    {{ riwayat.diubah_oleh.get_role_display }}
+                                </small>
+                            {% else %}
+                                <span class="text-muted">Sistem</span>
+                            {% endif %}
+                        </td>
+
+                        <td style="min-width: 200px;">
+                            {% if riwayat.catatan %}
+                                {{ riwayat.catatan|truncatechars:80 }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'administrator:riwayat_status_detail' riwayat.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                <i class="bi bi-eye me-1"></i>
+                                Detail
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-clock-history fs-1 d-block mb-3"></i>
+                            Tidak ada riwayat status yang ditemukan.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}&q={{ query|urlencode }}&status_lama={{ selected_status_lama }}&status_baru={{ selected_status_baru }}&pengubah={{ selected_pengubah }}"
+                    >
+                        Sebelumnya
+                    </a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.next_page_number }}&q={{ query|urlencode }}&status_lama={{ selected_status_lama }}&status_baru={{ selected_status_baru }}&pengubah={{ selected_pengubah }}"
+                    >
+                        Berikutnya
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

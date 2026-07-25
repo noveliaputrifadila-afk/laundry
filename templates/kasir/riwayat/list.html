@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Riwayat Transaksi | Kasir
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .summary-card,
+    .filter-card,
+    .table-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .summary-card {
+        height: 100%;
+    }
+
+    .summary-label {
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+
+    .summary-value {
+        margin-top: 0.25rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .summary-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        font-size: 1.25rem;
+    }
+
+    .table-card {
+        overflow: hidden;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 0.9rem 1rem;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-1">
+        Riwayat Transaksi
+    </h2>
+
+    <p class="text-muted mb-0">
+        Daftar transaksi yang ditangani oleh
+        {{ request.user.get_full_name|default:request.user.username }}.
+    </p>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card summary-card">
+            <div class="card-body d-flex justify-content-between">
+                <div>
+                    <div class="summary-label">
+                        Total Transaksi
+                    </div>
+
+                    <div class="summary-value">
+                        {{ total_transaksi }}
+                    </div>
+                </div>
+
+                <div class="summary-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-receipt"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card summary-card">
+            <div class="card-body">
+                <div class="summary-label">
+                    Total Nilai Transaksi
+                </div>
+
+                <div class="summary-value">
+                    Rp{{ total_nominal|floatformat:0 }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card summary-card">
+            <div class="card-body d-flex justify-content-between">
+                <div>
+                    <div class="summary-label">
+                        Transaksi Lunas
+                    </div>
+
+                    <div class="summary-value text-success">
+                        {{ total_lunas }}
+                    </div>
+
+                    <small class="text-muted">
+                        Rp{{ nominal_lunas|floatformat:0 }}
+                    </small>
+                </div>
+
+                <div class="summary-icon bg-success-subtle text-success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card summary-card">
+            <div class="card-body d-flex justify-content-between">
+                <div>
+                    <div class="summary-label">
+                        Belum Lunas
+                    </div>
+
+                    <div class="summary-value text-warning">
+                        {{ total_belum_lunas }}
+                    </div>
+                </div>
+
+                <div class="summary-icon bg-warning-subtle text-warning">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card filter-card mb-4">
+    <div class="card-header bg-white py-3">
+        <strong>
+            Filter Riwayat
+        </strong>
+    </div>
+
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <label class="form-label">
+                        Cari transaksi
+                    </label>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ keyword }}"
+                        class="form-control"
+                        placeholder="Kode pesanan atau pelanggan"
+                    >
+                </div>
+
+                <div class="col-md-6 col-lg-2">
+                    <label class="form-label">
+                        Status Pesanan
+                    </label>
+
+                    <select
+                        name="status_pesanan"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        {% for value, label in status_pesanan_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if status_pesanan_terpilih == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6 col-lg-2">
+                    <label class="form-label">
+                        Status Pembayaran
+                    </label>
+
+                    <select
+                        name="status_pembayaran"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        {% for value, label in status_pembayaran_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if status_pembayaran_terpilih == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-6 col-lg-2">
+                    <label class="form-label">
+                        Tanggal Mulai
+                    </label>
+
+                    <input
+                        type="date"
+                        name="tanggal_mulai"
+                        value="{{ tanggal_mulai }}"
+                        class="form-control"
+                    >
+                </div>
+
+                <div class="col-md-6 col-lg-2">
+                    <label class="form-label">
+                        Tanggal Selesai
+                    </label>
+
+                    <input
+                        type="date"
+                        name="tanggal_selesai"
+                        value="{{ tanggal_selesai }}"
+                        class="form-control"
+                    >
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2">
+                    <a
+                        href="{% url 'kasir:riwayat_transaksi' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        <i class="bi bi-arrow-clockwise me-1"></i>
+                        Reset
+                    </a>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-search me-1"></i>
+                        Terapkan Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Kode Pesanan</th>
+                    <th>Tanggal</th>
+                    <th>Pelanggan</th>
+                    <th>Metode</th>
+                    <th>Status Pesanan</th>
+                    <th>Status Pembayaran</th>
+                    <th>Total</th>
+                    <th class="text-center">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for transaksi in transaksi_list %}
+                    <tr>
+                        <td class="fw-semibold">
+                            {{ transaksi.kode_pesanan }}
+                        </td>
+
+                        <td>
+                            {{ transaksi.created_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ transaksi.pelanggan.get_full_name|default:transaksi.pelanggan.username }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ transaksi.pelanggan.nomor_hp|default:"-" }}
+                            </small>
+                        </td>
+
+                        <td>
+                            {% if transaksi.metode_pembayaran %}
+                                {{ transaksi.metode_pembayaran.nama }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if transaksi.status == "selesai" %}
+                                <span class="badge bg-success-subtle text-success">
+                                    {{ transaksi.get_status_display }}
+                                </span>
+
+                            {% elif transaksi.status == "dibatalkan" or transaksi.status == "ditolak" %}
+                                <span class="badge bg-danger-subtle text-danger">
+                                    {{ transaksi.get_status_display }}
+                                </span>
+
+                            {% elif transaksi.status == "menunggu_konfirmasi" or transaksi.status == "menunggu_antrian" %}
+                                <span class="badge bg-warning-subtle text-warning">
+                                    {{ transaksi.get_status_display }}
+                                </span>
+
+                            {% else %}
+                                <span class="badge bg-primary-subtle text-primary">
+                                    {{ transaksi.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if transaksi.status_pembayaran == "lunas" %}
+                                <span class="badge bg-success-subtle text-success">
+                                    {{ transaksi.get_status_pembayaran_display }}
+                                </span>
+
+                            {% elif transaksi.status_pembayaran == "belum_dibayar" %}
+                                <span class="badge bg-danger-subtle text-danger">
+                                    {{ transaksi.get_status_pembayaran_display }}
+                                </span>
+
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning">
+                                    {{ transaksi.get_status_pembayaran_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="fw-semibold">
+                            Rp{{ transaksi.total_biaya|floatformat:0 }}
+                        </td>
+
+                        <td class="text-center">
+                            <a
+                                href="{% url 'kasir:pesanan_detail' transaksi.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                                title="Lihat detail pesanan"
+                            >
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="8"
+                            class="text-center text-muted py-5"
+                        >
+                            <i class="bi bi-clock-history fs-1 d-block mb-2"></i>
+
+                            Belum ada riwayat transaksi yang sesuai.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-white">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <small class="text-muted">
+                    Halaman {{ page_obj.number }}
+                    dari {{ page_obj.paginator.num_pages }}
+                </small>
+
+                <div class="d-flex gap-2">
+                    {% if page_obj.has_previous %}
+                        <a
+                            href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&status_pesanan={{ status_pesanan_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&tanggal_mulai={{ tanggal_mulai }}&tanggal_selesai={{ tanggal_selesai }}"
+                            class="btn btn-sm btn-outline-secondary"
+                        >
+                            Sebelumnya
+                        </a>
+                    {% endif %}
+
+                    <span class="btn btn-sm btn-primary disabled">
+                        {{ page_obj.number }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a
+                            href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&status_pesanan={{ status_pesanan_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&tanggal_mulai={{ tanggal_mulai }}&tanggal_selesai={{ tanggal_selesai }}"
+                            class="btn btn-sm btn-outline-secondary"
+                        >
+                            Selanjutnya
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

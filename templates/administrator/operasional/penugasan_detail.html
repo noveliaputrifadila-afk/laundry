@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Atur Penugasan{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Atur Penugasan</h2>
+        <p class="text-muted mb-0">
+            Pesanan {{ pesanan.kode_pesanan }}
+        </p>
+    </div>
+
+    <a href="{% url 'administrator:penugasan_list' %}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Informasi Pesanan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Kode Pesanan</small>
+                        <span class="fw-semibold">
+                            {{ pesanan.kode_pesanan }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Status</small>
+                        <span class="badge bg-secondary">
+                            {{ pesanan.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Pelanggan</small>
+                        <span class="fw-semibold">
+                            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Tanggal Pesanan</small>
+                        <span class="fw-semibold">
+                            {{ pesanan.created_at|date:"d M Y H:i" }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Kasir</small>
+                        <span class="fw-semibold">
+                            {% if pesanan.kasir %}
+                                {{ pesanan.kasir.get_full_name|default:pesanan.kasir.username }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">Petugas Saat Ini</small>
+
+                        {% if pesanan.petugas_laundry %}
+                            <span class="fw-semibold text-success">
+                                {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                            </span>
+                        {% else %}
+                            <span class="text-danger">
+                                Belum ditugaskan
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                <a
+                    href="{% url 'administrator:pesanan_detail' pesanan.pk %}"
+                    class="btn btn-outline-primary"
+                >
+                    <i class="bi bi-receipt me-1"></i>
+                    Lihat Detail Pesanan
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>
+                    {% if pesanan.petugas_laundry %}
+                        Ganti Petugas
+                    {% else %}
+                        Pilih Petugas
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="card-body">
+                <form
+                    method="post"
+                    action="{% url 'administrator:penugasan_assign' pesanan.pk %}"
+                >
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Petugas Laundry
+                        </label>
+
+                        <select name="petugas_id" class="form-select" required>
+                            <option value="">Pilih petugas</option>
+
+                            {% for petugas in petugas_list %}
+                                <option
+                                    value="{{ petugas.pk }}"
+                                    {% if pesanan.petugas_laundry_id == petugas.pk %}selected{% endif %}
+                                >
+                                    {{ petugas.get_full_name|default:petugas.username }}
+                                    — {{ petugas.jumlah_tugas }} tugas
+                                </option>
+                            {% empty %}
+                                <option value="" disabled>
+                                    Tidak ada petugas aktif
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                        onclick="return confirm('Simpan penugasan petugas ini?')"
+                    >
+                        <i class="bi bi-person-check me-1"></i>
+
+                        {% if pesanan.petugas_laundry %}
+                            Ganti Petugas
+                        {% else %}
+                            Tugaskan Petugas
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {% if pesanan.petugas_laundry %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <strong>Hapus Penugasan</strong>
+                </div>
+
+                <div class="card-body">
+                    <p class="text-muted">
+                        Pesanan akan kembali berstatus belum memiliki petugas.
+                    </p>
+
+                    <form
+                        method="post"
+                        action="{% url 'administrator:penugasan_hapus' pesanan.pk %}"
+                        onsubmit="return confirm('Hapus penugasan petugas ini?')"
+                    >
+                        {% csrf_token %}
+
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="bi bi-person-x me-1"></i>
+                            Hapus Penugasan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

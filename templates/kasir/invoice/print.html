@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>{{ invoice.nomor_invoice }}</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 30px;
+            color: #111827;
+            background: #f3f4f6;
+            font-family: Arial, sans-serif;
+        }
+
+        .invoice-paper {
+            max-width: 850px;
+            margin: auto;
+            padding: 40px;
+            background: #fff;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #111827;
+        }
+
+        .invoice-title {
+            margin: 0;
+            font-size: 34px;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .invoice-info > div {
+            width: 50%;
+        }
+
+        .label {
+            margin-bottom: 5px;
+            color: #6b7280;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f9fafb;
+        }
+
+        .summary {
+            width: 380px;
+            margin-top: 25px;
+            margin-left: auto;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 7px 0;
+        }
+
+        .summary-total {
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 2px solid #111827;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .print-actions {
+            max-width: 850px;
+            margin: 0 auto 20px;
+            text-align: right;
+        }
+
+        .print-button {
+            padding: 10px 18px;
+            border: 0;
+            border-radius: 6px;
+            color: white;
+            background: #2563eb;
+            cursor: pointer;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                background: white;
+            }
+
+            .invoice-paper {
+                max-width: none;
+                padding: 20px;
+                box-shadow: none;
+            }
+
+            .print-actions {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="print-actions">
+        <button
+            type="button"
+            class="print-button"
+            onclick="window.print()"
+        >
+            Cetak Invoice
+        </button>
+    </div>
+
+    <div class="invoice-paper">
+        <div class="invoice-header">
+            <div>
+                <h1 class="invoice-title">
+                    INVOICE
+                </h1>
+
+                <p>
+                    Laundry Management System
+                </p>
+            </div>
+
+            <div class="text-right">
+                <strong>{{ invoice.nomor_invoice }}</strong>
+
+                <p>
+                    Tanggal:
+                    {{ invoice.tanggal_terbit|date:"d F Y" }}
+                </p>
+
+                <p>
+                    Status:
+                    {{ invoice.get_status_display }}
+                </p>
+            </div>
+        </div>
+
+        <div class="invoice-info">
+            <div>
+                <div class="label">
+                    Ditagihkan kepada
+                </div>
+
+                <strong>
+                    {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                </strong>
+
+                <div>
+                    {{ pesanan.pelanggan.nomor_hp }}
+                </div>
+
+                <div>
+                    {{ pesanan.pelanggan.email }}
+                </div>
+
+                <div>
+                    {{ pesanan.pelanggan.alamat|default:"-" }}
+                </div>
+            </div>
+
+            <div class="text-right">
+                <div class="label">
+                    Informasi pesanan
+                </div>
+
+                <div>
+                    Kode: {{ pesanan.kode_pesanan }}
+                </div>
+
+                <div>
+                    Pembayaran:
+                    {{ pesanan.metode_pembayaran.nama }}
+                </div>
+
+                {% if invoice.tanggal_jatuh_tempo %}
+                    <div>
+                        Jatuh tempo:
+                        {{ invoice.tanggal_jatuh_tempo|date:"d F Y" }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Layanan</th>
+                    <th>Barang</th>
+                    <th>Jumlah</th>
+                    <th>Harga</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for detail in pesanan.detail.all %}
+                    <tr>
+                        <td>{{ detail.layanan.nama }}</td>
+                        <td>{{ detail.nama_barang }}</td>
+                        <td>
+                            {{ detail.jumlah|floatformat:2 }}
+                            {{ detail.get_satuan_display }}
+                        </td>
+                        <td>
+                            Rp{{ detail.harga_satuan|floatformat:0 }}
+                        </td>
+                        <td>
+                            Rp{{ detail.subtotal|floatformat:0 }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="summary">
+            <div class="summary-row">
+                <span>Subtotal</span>
+                <span>Rp{{ pesanan.subtotal|floatformat:0 }}</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Diskon</span>
+                <span>- Rp{{ pesanan.diskon|floatformat:0 }}</span>
+            </div>
+
+            <div class="summary-row">
+                <span>Biaya antar-jemput</span>
+                <span>
+                    Rp{{ pesanan.biaya_antar_jemput|floatformat:0 }}
+                </span>
+            </div>
+
+            <div class="summary-row">
+                <span>Biaya tambahan</span>
+                <span>
+                    Rp{{ pesanan.biaya_tambahan|floatformat:0 }}
+                </span>
+            </div>
+
+            <div class="summary-row summary-total">
+                <span>Total</span>
+                <span>Rp{{ invoice.total|floatformat:0 }}</span>
+            </div>
+        </div>
+
+        {% if invoice.catatan %}
+            <div style="margin-top: 35px;">
+                <div class="label">Catatan</div>
+                <div>{{ invoice.catatan }}</div>
+            </div>
+        {% endif %}
+
+        <div style="margin-top: 60px; text-align: center;">
+            Terima kasih telah menggunakan layanan kami.
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Cari Pelanggan | Kasir
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .customer-card,
+    .filter-card,
+    .table-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .table-card {
+        overflow: hidden;
+    }
+
+    .customer-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e0e7ff;
+        color: #4f46e5;
+        font-weight: 700;
+    }
+
+    .table > :not(caption) > * > * {
+        padding: 0.9rem 1rem;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Cari Pelanggan</h2>
+
+        <p class="text-muted mb-0">
+            Cari dan lihat informasi pelanggan laundry.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'kasir:pelanggan_register' %}"
+        class="btn btn-primary"
+    >
+        <i class="bi bi-person-plus me-1"></i>
+        Registrasi Pelanggan
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card customer-card">
+            <div class="card-body">
+                <div class="text-muted small">
+                    Pelanggan ditemukan
+                </div>
+
+                <div class="fs-3 fw-bold">
+                    {{ total_pelanggan }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card filter-card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <label class="form-label">
+                        Cari pelanggan
+                    </label>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ keyword }}"
+                        class="form-control"
+                        placeholder="Nama, username, email, atau nomor HP"
+                    >
+                </div>
+
+                <div class="col-lg-3">
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select name="status" class="form-select">
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        <option
+                            value="aktif"
+                            {% if status_terpilih == "aktif" %}selected{% endif %}
+                        >
+                            Aktif dan terverifikasi
+                        </option>
+
+                        <option
+                            value="menunggu"
+                            {% if status_terpilih == "menunggu" %}selected{% endif %}
+                        >
+                            Menunggu verifikasi
+                        </option>
+
+                        <option
+                            value="nonaktif"
+                            {% if status_terpilih == "nonaktif" %}selected{% endif %}
+                        >
+                            Nonaktif
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 d-flex align-items-end gap-2">
+                    <button
+                        type="submit"
+                        class="btn btn-primary flex-grow-1"
+                    >
+                        Cari
+                    </button>
+
+                    <a
+                        href="{% url 'kasir:pelanggan_list' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        <i class="bi bi-arrow-clockwise"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card table-card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Pelanggan</th>
+                    <th>Username</th>
+                    <th>Nomor HP</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Terdaftar</th>
+                    <th class="text-center">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pelanggan in pelanggan_list %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="customer-avatar">
+                                    {{ pelanggan.first_name|first|default:pelanggan.username|first|upper }}
+                                </div>
+
+                                <div>
+                                    <div class="fw-semibold">
+                                        {{ pelanggan.get_full_name|default:pelanggan.username }}
+                                    </div>
+
+                                    {% if pelanggan.alamat %}
+                                        <small class="text-muted">
+                                            {{ pelanggan.alamat|truncatechars:40 }}
+                                        </small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>
+                            {{ pelanggan.username }}
+                        </td>
+
+                        <td>
+                            {{ pelanggan.nomor_hp|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ pelanggan.email|default:"-" }}
+                        </td>
+
+                        <td>
+                            {% if not pelanggan.is_active %}
+                                <span class="badge bg-danger-subtle text-danger">
+                                    Nonaktif
+                                </span>
+                            {% elif pelanggan.is_verified %}
+                                <span class="badge bg-success-subtle text-success">
+                                    Terverifikasi
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning">
+                                    Menunggu verifikasi
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ pelanggan.date_joined|date:"d M Y" }}
+                        </td>
+
+                        <td class="text-center">
+                            <a
+                                href="{% url 'kasir:pelanggan_detail' pelanggan.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                                title="Lihat detail"
+                            >
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="7"
+                            class="text-center text-muted py-5"
+                        >
+                            <i class="bi bi-person-x fs-1 d-block mb-2"></i>
+                            Pelanggan tidak ditemukan.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-white">
+            <div class="d-flex justify-content-center gap-2">
+                {% if page_obj.has_previous %}
+                    <a
+                        href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&status={{ status_terpilih }}"
+                        class="btn btn-sm btn-outline-secondary"
+                    >
+                        Sebelumnya
+                    </a>
+                {% endif %}
+
+                <span class="btn btn-sm btn-primary disabled">
+                    {{ page_obj.number }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a
+                        href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&status={{ status_terpilih }}"
+                        class="btn btn-sm btn-outline-secondary"
+                    >
+                        Selanjutnya
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

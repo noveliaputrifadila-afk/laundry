@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Detail Layanan
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Detail Layanan
+        </h2>
+
+        <p class="text-muted mb-0">
+            Informasi layanan laundry.
+        </p>
+    </div>
+
+    <div class="mt-3 mt-md-0">
+        <a
+            href="{% url 'administrator:layanan_update' layanan.pk %}"
+            class="btn btn-warning"
+        >
+            <i class="bi bi-pencil me-1"></i>
+            Edit
+        </a>
+
+        <a
+            href="{% url 'administrator:layanan_list' %}"
+            class="btn btn-outline-secondary"
+        >
+            Kembali
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Informasi Layanan
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Nama layanan
+                    </div>
+
+                    <div class="col-sm-8">
+                        <strong>
+                            {{ layanan.nama }}
+                        </strong>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Kategori
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ layanan.kategori.nama }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Deskripsi
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ layanan.deskripsi|default:"-"|linebreaksbr }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Satuan
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ layanan.get_satuan_display|default:layanan.satuan }}
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-sm-4 text-muted">
+                        Estimasi selesai
+                    </div>
+
+                    <div class="col-sm-8">
+                        {{ layanan.estimasi_hari }} hari
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-sm-4 text-muted">
+                        Status
+                    </div>
+
+                    <div class="col-sm-8">
+                        {% if layanan.is_active %}
+                            <span class="badge bg-success">
+                                Aktif
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">
+                                Nonaktif
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Status Layanan
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <form
+                    method="post"
+                    action="{% url 'administrator:layanan_toggle_active' layanan.pk %}"
+                >
+                    {% csrf_token %}
+
+                    {% if layanan.is_active %}
+                        <p class="text-muted">
+                            Layanan ini dapat dipilih pelanggan.
+                        </p>
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger w-100"
+                            onclick="return confirm('Nonaktifkan layanan ini?')"
+                        >
+                            Nonaktifkan Layanan
+                        </button>
+                    {% else %}
+                        <p class="text-muted">
+                            Layanan ini tidak dapat dipilih pelanggan.
+                        </p>
+
+                        <button
+                            type="submit"
+                            class="btn btn-success w-100"
+                            onclick="return confirm('Aktifkan layanan ini?')"
+                        >
+                            Aktifkan Layanan
+                        </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ judul }}
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-1">
+        {{ judul }}
+    </h2>
+
+    <p class="text-muted mb-0">
+        Lengkapi data invoice pesanan.
+    </p>
+</div>
+
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            <div class="row g-3">
+                {% for field in form %}
+                    <div class="col-md-6">
+                        <label
+                            for="{{ field.id_for_label }}"
+                            class="form-label fw-semibold"
+                        >
+                            {{ field.label }}
+                        </label>
+
+                        {{ field }}
+
+                        {% if field.help_text %}
+                            <div class="form-text">
+                                {{ field.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% for error in field.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    <i class="bi bi-save me-1"></i>
+                    {{ tombol }}
+                </button>
+
+                <a
+                    href="{% url 'administrator:invoice_list' %}"
+                    class="btn btn-outline-secondary"
+                >
+                    Batal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

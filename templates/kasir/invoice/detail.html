@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Detail Invoice
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .invoice-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .detail-label {
+        margin-bottom: 0.25rem;
+        color: #64748b;
+        font-size: 0.82rem;
+    }
+
+    .detail-value {
+        font-weight: 600;
+    }
+
+    .total-box {
+        padding: 1rem;
+        border-radius: 12px;
+        background: #eff6ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <a
+            href="{% url 'kasir:invoice_list' %}"
+            class="text-decoration-none"
+        >
+            <i class="bi bi-arrow-left me-1"></i>
+            Kembali ke daftar invoice
+        </a>
+
+        <h2 class="fw-bold mt-2 mb-1">
+            {{ invoice.nomor_invoice }}
+        </h2>
+
+        <p class="text-muted mb-0">
+            Invoice untuk pesanan {{ pesanan.kode_pesanan }}.
+        </p>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a
+            href="{% url 'kasir:invoice_print' invoice.pk %}"
+            class="btn btn-outline-primary"
+            target="_blank"
+        >
+            <i class="bi bi-printer me-1"></i>
+            Cetak
+        </a>
+
+        {% if invoice.status == "draft" %}
+            <form
+                method="post"
+                action="{% url 'kasir:invoice_terbitkan' invoice.pk %}"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                    onclick="return confirm('Terbitkan invoice ini?')"
+                >
+                    <i class="bi bi-send me-1"></i>
+                    Terbitkan
+                </button>
+            </form>
+        {% endif %}
+
+        {% if invoice.status != "lunas" and invoice.status != "dibatalkan" %}
+            <form
+                method="post"
+                action="{% url 'kasir:invoice_batalkan' invoice.pk %}"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="btn btn-outline-danger"
+                    onclick="return confirm('Batalkan invoice ini?')"
+                >
+                    <i class="bi bi-x-circle me-1"></i>
+                    Batalkan
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card invoice-card mb-4">
+            <div class="card-header bg-white py-3">
+                <div class="d-flex justify-content-between">
+                    <strong>Informasi Invoice</strong>
+
+                    {% if invoice.status == "lunas" %}
+                        <span class="badge bg-success-subtle text-success">
+                            {{ invoice.get_status_display }}
+                        </span>
+                    {% elif invoice.status == "dibatalkan" %}
+                        <span class="badge bg-danger-subtle text-danger">
+                            {{ invoice.get_status_display }}
+                        </span>
+                    {% elif invoice.status == "diterbitkan" %}
+                        <span class="badge bg-warning-subtle text-warning">
+                            {{ invoice.get_status_display }}
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary">
+                            {{ invoice.get_status_display }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="detail-label">Nomor invoice</div>
+                        <div class="detail-value">
+                            {{ invoice.nomor_invoice }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">Tanggal terbit</div>
+                        <div class="detail-value">
+                            {{ invoice.tanggal_terbit|date:"d F Y, H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">Jatuh tempo</div>
+                        <div class="detail-value">
+                            {% if invoice.tanggal_jatuh_tempo %}
+                                {{ invoice.tanggal_jatuh_tempo|date:"d F Y, H:i" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">Dibuat oleh</div>
+                        <div class="detail-value">
+                            {{ invoice.dibuat_oleh.get_full_name|default:invoice.dibuat_oleh.username }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">Metode pembayaran</div>
+                        <div class="detail-value">
+                            {{ pesanan.metode_pembayaran.nama }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">Status pembayaran</div>
+                        <div class="detail-value">
+                            {{ pesanan.get_status_pembayaran_display }}
+                        </div>
+                    </div>
+                </div>
+
+                {% if invoice.catatan %}
+                    <hr>
+
+                    <div class="detail-label">Catatan</div>
+                    <div>{{ invoice.catatan }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card invoice-card">
+            <div class="card-header bg-white py-3">
+                <strong>Rincian Layanan</strong>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Layanan</th>
+                            <th>Barang</th>
+                            <th>Jumlah</th>
+                            <th>Harga</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for detail in pesanan.detail.all %}
+                            <tr>
+                                <td>{{ detail.layanan.nama }}</td>
+                                <td>{{ detail.nama_barang }}</td>
+                                <td>
+                                    {{ detail.jumlah|floatformat:2 }}
+                                    {{ detail.get_satuan_display }}
+                                </td>
+                                <td>
+                                    Rp{{ detail.harga_satuan|floatformat:0 }}
+                                </td>
+                                <td class="fw-semibold">
+                                    Rp{{ detail.subtotal|floatformat:0 }}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td
+                                    colspan="5"
+                                    class="text-center text-muted py-4"
+                                >
+                                    Tidak ada rincian layanan.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card invoice-card mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Data Pelanggan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="detail-label">Nama</div>
+
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label">Nomor HP</div>
+
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.nomor_hp }}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="detail-label">Email</div>
+
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.email }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card invoice-card">
+            <div class="card-header bg-white py-3">
+                <strong>Ringkasan Biaya</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal</span>
+                    <span>Rp{{ pesanan.subtotal|floatformat:0 }}</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Diskon</span>
+                    <span>- Rp{{ pesanan.diskon|floatformat:0 }}</span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Antar-jemput</span>
+                    <span>
+                        Rp{{ pesanan.biaya_antar_jemput|floatformat:0 }}
+                    </span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Biaya tambahan</span>
+                    <span>
+                        Rp{{ pesanan.biaya_tambahan|floatformat:0 }}
+                    </span>
+                </div>
+
+                <div class="total-box d-flex justify-content-between">
+                    <strong>Total</strong>
+
+                    <strong class="fs-4 text-primary">
+                        Rp{{ invoice.total|floatformat:0 }}
+                    </strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

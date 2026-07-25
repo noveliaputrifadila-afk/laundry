@@ -1,0 +1,395 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Detail Pembayaran
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Detail Pembayaran
+        </h2>
+
+        <p class="text-muted mb-0">
+            {{ pembayaran.kode_pembayaran }}
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:pembayaran_list' %}"
+        class="btn btn-outline-secondary"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div
+            class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+            role="alert"
+        >
+            {{ message }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Informasi Pembayaran</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Kode Pembayaran
+                        </small>
+                        <div class="fw-semibold">
+                            {{ pembayaran.kode_pembayaran }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Kode Pesanan
+                        </small>
+                        <div class="fw-semibold">
+                            {{ pembayaran.pesanan.kode_pesanan }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Pelanggan
+                        </small>
+                        <div class="fw-semibold">
+                            {{ pembayaran.pesanan.pelanggan.get_full_name|default:pembayaran.pesanan.pelanggan.username }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Nomor HP
+                        </small>
+                        <div class="fw-semibold">
+                            {{ pembayaran.pesanan.pelanggan.nomor_hp }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Metode Pembayaran
+                        </small>
+                        <div class="fw-semibold">
+                            {{ pembayaran.metode_pembayaran.nama }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Jumlah Dibayar
+                        </small>
+                        <div class="fw-bold text-primary fs-5">
+                            Rp{{ pembayaran.jumlah|floatformat:0 }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Tanggal Pembayaran
+                        </small>
+                        <div class="fw-semibold">
+                            {{ pembayaran.tanggal_pembayaran|date:"d M Y H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Status
+                        </small>
+
+                        <div class="mt-1">
+                            {% if pembayaran.status == "berhasil" %}
+                                <span class="badge bg-success">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% elif pembayaran.status == "menunggu" %}
+                                <span class="badge bg-warning text-dark">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% elif pembayaran.status == "ditolak" %}
+                                <span class="badge bg-danger">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% elif pembayaran.status == "dikembalikan" %}
+                                <span class="badge bg-info text-dark">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Diverifikasi Oleh
+                        </small>
+                        <div class="fw-semibold">
+                            {% if pembayaran.diverifikasi_oleh %}
+                                {{ pembayaran.diverifikasi_oleh.get_full_name|default:pembayaran.diverifikasi_oleh.username }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            Waktu Verifikasi
+                        </small>
+                        <div class="fw-semibold">
+                            {% if pembayaran.diverifikasi_pada %}
+                                {{ pembayaran.diverifikasi_pada|date:"d M Y H:i" }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if pembayaran.catatan %}
+                        <div class="col-12">
+                            <small class="text-muted">
+                                Catatan
+                            </small>
+
+                            <div class="alert alert-light border mb-0 mt-1">
+                                {{ pembayaran.catatan|linebreaksbr }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <strong>Bukti Pembayaran</strong>
+            </div>
+
+            <div class="card-body">
+                {% if pembayaran.bukti_pembayaran %}
+                    <a
+                        href="{{ pembayaran.bukti_pembayaran.url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <img
+                            src="{{ pembayaran.bukti_pembayaran.url }}"
+                            alt="Bukti pembayaran {{ pembayaran.kode_pembayaran }}"
+                            class="img-fluid rounded border"
+                            style="max-height: 550px;"
+                        >
+                    </a>
+
+                    <div class="mt-3">
+                        <a
+                            href="{{ pembayaran.bukti_pembayaran.url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="btn btn-outline-primary"
+                        >
+                            <i class="bi bi-arrows-fullscreen me-1"></i>
+                            Buka Gambar
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-image fs-1 d-block mb-2"></i>
+                        Bukti pembayaran belum diunggah.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Ringkasan Pesanan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Total Pesanan</span>
+                    <strong>
+                        Rp{{ pembayaran.pesanan.total_biaya|floatformat:0 }}
+                    </strong>
+                </div>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Total Terverifikasi</span>
+                    <strong class="text-success">
+                        Rp{{ total_berhasil|floatformat:0 }}
+                    </strong>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between">
+                    <span>Sisa Pembayaran</span>
+                    <strong class="text-danger">
+                        Rp{{ sisa_pembayaran|floatformat:0 }}
+                    </strong>
+                </div>
+
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Status pesanan
+                    </small>
+
+                    <div class="fw-semibold">
+                        {{ pembayaran.pesanan.get_status_pembayaran_display }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if pembayaran.status == "menunggu" or pembayaran.status == "gagal" or pembayaran.status == "ditolak" %}
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <strong>Verifikasi Pembayaran</strong>
+                </div>
+
+                <div class="card-body">
+                    <form
+                        method="post"
+                        action="{% url 'administrator:pembayaran_verifikasi' pembayaran.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Catatan verifikasi
+                            </label>
+
+                            <textarea
+                                name="catatan"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Catatan opsional"
+                            ></textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-success w-100"
+                            onclick="return confirm('Verifikasi pembayaran ini?')"
+                        >
+                            <i class="bi bi-check-circle me-1"></i>
+                            Verifikasi Pembayaran
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if pembayaran.status != "berhasil" and pembayaran.status != "dikembalikan" %}
+            <div class="card mb-4">
+                <div class="card-header bg-white py-3">
+                    <strong>Tolak Pembayaran</strong>
+                </div>
+
+                <div class="card-body">
+                    <form
+                        method="post"
+                        action="{% url 'administrator:pembayaran_tolak' pembayaran.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Alasan penolakan
+                            </label>
+
+                            <textarea
+                                name="alasan"
+                                class="form-control"
+                                rows="3"
+                                required
+                                placeholder="Jelaskan alasan pembayaran ditolak"
+                            ></textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-danger w-100"
+                            onclick="return confirm('Tolak pembayaran ini?')"
+                        >
+                            <i class="bi bi-x-circle me-1"></i>
+                            Tolak Pembayaran
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if pembayaran.status == "berhasil" %}
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <strong>Pengembalian Pembayaran</strong>
+                </div>
+
+                <div class="card-body">
+                    <form
+                        method="post"
+                        action="{% url 'administrator:pembayaran_kembalikan' pembayaran.pk %}"
+                    >
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Alasan pengembalian
+                            </label>
+
+                            <textarea
+                                name="alasan"
+                                class="form-control"
+                                rows="3"
+                                required
+                                placeholder="Jelaskan alasan pengembalian dana"
+                            ></textarea>
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-outline-danger w-100"
+                            onclick="return confirm('Tandai pembayaran ini sebagai dikembalikan?')"
+                        >
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            Tandai Dikembalikan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

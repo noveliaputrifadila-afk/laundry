@@ -1,0 +1,101 @@
+{% with url_name=request.resolver_match.url_name %}
+
+<aside class="sidebar">
+
+    <div class="sidebar-header">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-droplet-half"></i>
+            </div>
+
+            <div>
+                <h4>NSIA Laundry</h4>
+                <small>Petugas Laundry</small>
+            </div>
+        </div>
+
+        <div class="sidebar-user">
+            
+
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </div>
+
+                <div class="sidebar-user-role">
+                    Petugas Laundry
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <div class="sidebar-group">
+            <div class="sidebar-menu-title">
+                Menu Utama
+            </div>
+
+            <a
+                href="{% url 'petugas:dashboard' %}"
+                class="nav-link {% if url_name == 'dashboard' %}active{% endif %}"
+            >
+                <i class="bi bi-grid"></i>
+                <span>Dashboard</span>
+            </a>
+        </div>
+
+        <div class="sidebar-group">
+            <div class="sidebar-menu-title">
+                Tugas Laundry
+            </div>
+
+            <a
+                href="{% url 'petugas:tugas_list' %}"
+                class="nav-link {% if url_name == 'tugas_list' or url_name == 'tugas_detail' %}active{% endif %}"
+            >
+                <i class="bi bi-list-task"></i>
+                <span>Daftar Tugas</span>
+            </a>
+
+            <a
+                href="{% url 'petugas:tugas_list' %}?status=dicuci"
+                class="nav-link"
+            >
+                <i class="bi bi-arrow-repeat"></i>
+                <span>Proses Laundry</span>
+            </a>
+        </div>
+
+        <div class="sidebar-group">
+            <div class="sidebar-menu-title">
+                Kendala
+            </div>
+
+            <a href="#" class="nav-link">
+                <i class="bi bi-exclamation-triangle"></i>
+                <span>Laporkan Kendala</span>
+            </a>
+
+            <a href="#" class="nav-link">
+                <i class="bi bi-clock-history"></i>
+                <span>Riwayat Kendala</span>
+            </a>
+        </div>
+
+        <div class="sidebar-group">
+            <div class="sidebar-menu-title">
+                Riwayat
+            </div>
+
+            <a href="#" class="nav-link">
+                <i class="bi bi-journal-check"></i>
+                <span>Riwayat Pekerjaan</span>
+            </a>
+        </div>
+
+    </nav>
+
+</aside>
+
+{% endwith %}

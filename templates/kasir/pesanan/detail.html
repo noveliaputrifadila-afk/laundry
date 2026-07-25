@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Detail Pesanan
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .detail-card .card-header {
+        padding: 1rem 1.25rem;
+        background: #ffffff;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .detail-label {
+        margin-bottom: 0.25rem;
+        color: #64748b;
+        font-size: 0.8rem;
+    }
+
+    .detail-value {
+        font-weight: 600;
+    }
+
+    .total-box {
+        padding: 1rem;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 1.5rem;
+        padding-bottom: 1.25rem;
+        border-left: 2px solid #dbeafe;
+    }
+
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+
+    .timeline-dot {
+        position: absolute;
+        top: 0;
+        left: -7px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #2563eb;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <a
+            href="{% url 'kasir:pesanan_list' %}"
+            class="text-decoration-none"
+        >
+            <i class="bi bi-arrow-left me-1"></i>
+            Kembali ke daftar pesanan
+        </a>
+
+        <h2 class="fw-bold mt-2 mb-1">
+            {{ pesanan.kode_pesanan }}
+        </h2>
+
+        <p class="text-muted mb-0">
+            Dibuat pada {{ pesanan.created_at|date:"d F Y, H:i" }}
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+        {% if pesanan.invoice %}
+            <a
+                href="{% url 'kasir:invoice_detail' pesanan.invoice.pk %}"
+                class="btn btn-outline-primary"
+            >
+                <i class="bi bi-receipt me-1"></i>
+                Lihat Invoice
+            </a>
+        {% else %}
+            <a
+                href="{% url 'kasir:invoice_create' pesanan.pk %}"
+                class="btn btn-primary"
+            >
+                <i class="bi bi-receipt me-1"></i>
+                Buat Invoice
+            </a>
+        {% endif %}
+        {% if pesanan.status == "menunggu_konfirmasi" %}
+            <button class="btn btn-success">
+                <i class="bi bi-check-circle me-1"></i>
+                Terima Pesanan
+            </button>
+
+            <button class="btn btn-outline-danger">
+                <i class="bi bi-x-circle me-1"></i>
+                Tolak
+            </button>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card detail-card mb-4">
+            <div class="card-header">
+                <strong>Informasi Pesanan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="detail-label">
+                            Status pesanan
+                        </div>
+
+                        <div class="detail-value">
+                            {{ pesanan.get_status_display }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">
+                            Status pembayaran
+                        </div>
+
+                        <div class="detail-value">
+                            {{ pesanan.get_status_pembayaran_display }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">
+                            Metode pembayaran
+                        </div>
+
+                        <div class="detail-value">
+                            {{ pesanan.metode_pembayaran.nama }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">
+                            Jenis pengantaran
+                        </div>
+
+                        <div class="detail-value">
+                            {{ pesanan.get_jenis_pengantaran_display }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">
+                            Kasir
+                        </div>
+
+                        <div class="detail-value">
+                            {% if pesanan.kasir %}
+                                {{ pesanan.kasir.get_full_name|default:pesanan.kasir.username }}
+                            {% else %}
+                                Belum ditentukan
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="detail-label">
+                            Petugas laundry
+                        </div>
+
+                        <div class="detail-value">
+                            {% if pesanan.petugas_laundry %}
+                                {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                            {% else %}
+                                Belum ditentukan
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if pesanan.estimasi_selesai %}
+                        <div class="col-md-4">
+                            <div class="detail-label">
+                                Estimasi selesai
+                            </div>
+
+                            <div class="detail-value">
+                                {{ pesanan.estimasi_selesai|date:"d F Y, H:i" }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="card detail-card mb-4">
+            <div class="card-header">
+                <strong>Detail Layanan</strong>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Layanan</th>
+                            <th>Barang</th>
+                            <th>Jumlah</th>
+                            <th>Harga</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for detail in pesanan.detail.all %}
+                            <tr>
+                                <td>
+                                    {{ detail.layanan.nama }}
+                                </td>
+
+                                <td>
+                                    {{ detail.nama_barang }}
+
+                                    {% if detail.catatan %}
+                                        <small class="text-muted d-block">
+                                            {{ detail.catatan }}
+                                        </small>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ detail.jumlah|floatformat:2 }}
+                                    {{ detail.get_satuan_display }}
+                                </td>
+
+                                <td>
+                                    Rp{{ detail.harga_satuan|floatformat:0 }}
+                                </td>
+
+                                <td class="fw-semibold">
+                                    Rp{{ detail.subtotal|floatformat:0 }}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Belum ada detail layanan.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card detail-card">
+            <div class="card-header">
+                <strong>Riwayat Status</strong>
+            </div>
+
+            <div class="card-body">
+                {% for riwayat in pesanan.riwayat_status.all %}
+                    <div class="timeline-item">
+                        <span class="timeline-dot"></span>
+
+                        <strong>
+                            {{ riwayat.get_status_baru_display }}
+                        </strong>
+
+                        <small class="text-muted d-block">
+                            {{ riwayat.created_at|date:"d M Y H:i" }}
+
+                            {% if riwayat.diubah_oleh %}
+                                ·
+                                {{ riwayat.diubah_oleh.get_full_name|default:riwayat.diubah_oleh.username }}
+                            {% endif %}
+                        </small>
+
+                        {% if riwayat.catatan %}
+                            <div class="mt-1">
+                                {{ riwayat.catatan }}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">
+                        Belum ada riwayat status.
+                    </p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card detail-card mb-4">
+            <div class="card-header">
+                <strong>Data Pelanggan</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="detail-label">Nama</div>
+
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label">Nomor HP</div>
+
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.nomor_hp }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label">Email</div>
+
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.email }}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="detail-label">Alamat</div>
+
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.alamat|default:"-" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if pesanan.jenis_pengantaran != "datang_sendiri" %}
+            <div class="card detail-card mb-4">
+                <div class="card-header">
+                    <strong>Informasi Antar-Jemput</strong>
+                </div>
+
+                <div class="card-body">
+                    {% if pesanan.area_layanan %}
+                        <div class="mb-3">
+                            <div class="detail-label">
+                                Area layanan
+                            </div>
+
+                            <div class="detail-value">
+                                {{ pesanan.area_layanan.nama_area }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if pesanan.alamat_penjemputan %}
+                        <div class="mb-3">
+                            <div class="detail-label">
+                                Alamat penjemputan
+                            </div>
+
+                            <div class="detail-value">
+                                {{ pesanan.alamat_penjemputan }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if pesanan.alamat_pengantaran %}
+                        <div>
+                            <div class="detail-label">
+                                Alamat pengantaran
+                            </div>
+
+                            <div class="detail-value">
+                                {{ pesanan.alamat_pengantaran }}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="card detail-card">
+            <div class="card-header">
+                <strong>Ringkasan Biaya</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal</span>
+
+                    <span>
+                        Rp{{ pesanan.subtotal|floatformat:0 }}
+                    </span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Diskon</span>
+
+                    <span>
+                        - Rp{{ pesanan.diskon|floatformat:0 }}
+                    </span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Biaya antar-jemput</span>
+
+                    <span>
+                        Rp{{ pesanan.biaya_antar_jemput|floatformat:0 }}
+                    </span>
+                </div>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Biaya tambahan</span>
+
+                    <span>
+                        Rp{{ pesanan.biaya_tambahan|floatformat:0 }}
+                    </span>
+                </div>
+
+                <div class="total-box d-flex justify-content-between">
+                    <strong>Total</strong>
+
+                    <strong class="fs-5 text-primary">
+                        Rp{{ pesanan.total_biaya|floatformat:0 }}
+                    </strong>
+                </div>
+             {% if pesanan.status_pembayaran != "lunas" %}
+                <div class="d-grid mt-3">
+                    <a
+                        href="{% url 'kasir:pembayaran_create_pesanan' pesanan.pk %}"
+                        class="btn btn-success"
+                    >
+                        <i class="bi bi-cash-coin me-1"></i>
+                        Catat Pembayaran
+                    </a>
+                </div>
+            {% else %}
+                <div class="alert alert-success mt-3 mb-0 text-center">
+                    <i class="bi bi-check-circle me-1"></i>
+                    Pesanan sudah lunas
+                </div>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

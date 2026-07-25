@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Verifikasi Pelanggan | Administrator
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Verifikasi Pelanggan
+        </h2>
+
+        <p class="text-muted mb-0">
+            {{ jumlah_menunggu }} akun menunggu verifikasi
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:dashboard' %}"
+        class="btn btn-outline-secondary"
+    >
+        Kembali
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        {% if pelanggan_list %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Pelanggan</th>
+                            <th>Kontak</th>
+                            <th>Alamat</th>
+                            <th>Tanggal daftar</th>
+                            <th class="text-end">Aksi</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for pelanggan in pelanggan_list %}
+                            <tr>
+                                <td>
+                                    {{ forloop.counter }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ pelanggan.get_full_name|default:pelanggan.username }}
+                                    </strong>
+
+                                    <div class="small text-muted">
+                                        @{{ pelanggan.username }}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    <div>
+                                        {{ pelanggan.nomor_hp }}
+                                    </div>
+
+                                    <div class="small text-muted">
+                                        {{ pelanggan.email }}
+                                    </div>
+                                </td>
+
+                                <td>
+                                    {{ pelanggan.alamat|default:"-" }}
+                                </td>
+
+                                <td>
+                                    {{ pelanggan.date_joined|date:"d M Y H:i" }}
+                                </td>
+
+                                <td class="text-end">
+                                    <form
+                                        method="post"
+                                        action="{% url 'administrator:verifikasi_pelanggan' pelanggan.pk %}"
+                                        class="d-inline"
+                                    >
+                                        {% csrf_token %}
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-success btn-sm"
+                                            onclick="return confirm(
+                                                'Verifikasi pelanggan ini?'
+                                            )"
+                                        >
+                                            Verifikasi
+                                        </button>
+                                    </form>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-danger btn-sm"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#tolakModal{{ pelanggan.pk }}"
+                                    >
+                                        Tolak
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <div
+                                class="modal fade"
+                                id="tolakModal{{ pelanggan.pk }}"
+                                tabindex="-1"
+                            >
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form
+                                            method="post"
+                                            action="{% url 'administrator:tolak_pelanggan' pelanggan.pk %}"
+                                        >
+                                            {% csrf_token %}
+
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">
+                                                    Tolak Registrasi
+                                                </h5>
+
+                                                <button
+                                                    type="button"
+                                                    class="btn-close"
+                                                    data-bs-dismiss="modal"
+                                                ></button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <p>
+                                                    Tolak registrasi
+                                                    <strong>
+                                                        {{ pelanggan.username }}
+                                                    </strong>?
+                                                </p>
+
+                                                <label
+                                                    for="alasan{{ pelanggan.pk }}"
+                                                    class="form-label"
+                                                >
+                                                    Alasan penolakan
+                                                </label>
+
+                                                <textarea
+                                                    name="alasan"
+                                                    id="alasan{{ pelanggan.pk }}"
+                                                    class="form-control"
+                                                    rows="3"
+                                                    required
+                                                ></textarea>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-secondary"
+                                                    data-bs-dismiss="modal"
+                                                >
+                                                    Batal
+                                                </button>
+
+                                                <button
+                                                    type="submit"
+                                                    class="btn btn-danger"
+                                                >
+                                                    Tolak Registrasi
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <h5>
+                    Tidak ada pelanggan yang menunggu verifikasi
+                </h5>
+
+                <p class="text-muted mb-0">
+                    Semua registrasi pelanggan telah diproses.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

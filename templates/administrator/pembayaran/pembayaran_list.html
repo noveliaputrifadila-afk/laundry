@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Data Pembayaran
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Data Pembayaran</h2>
+        <p class="text-muted mb-0">
+            Kelola dan verifikasi seluruh pembayaran pelanggan.
+        </p>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div
+            class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show"
+            role="alert"
+        >
+            {{ message }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+                aria-label="Tutup"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <small class="text-muted">Menunggu Verifikasi</small>
+                <h3 class="fw-bold mb-0 mt-2">
+                    {{ total_menunggu }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <small class="text-muted">Pembayaran Berhasil</small>
+                <h3 class="fw-bold mb-0 mt-2">
+                    {{ total_berhasil }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <small class="text-muted">Total Nominal Berhasil</small>
+                <h3 class="fw-bold mb-0 mt-2">
+                    Rp{{ nominal_berhasil|floatformat:0 }}
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-5">
+                    <label class="form-label">
+                        Pencarian
+                    </label>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ query }}"
+                        class="form-control"
+                        placeholder="Kode pembayaran, pesanan, pelanggan, atau nomor HP"
+                    >
+                </div>
+
+                <div class="col-lg-3">
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select
+                        name="status"
+                        class="form-select"
+                    >
+                        <option value="">Semua status</option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">
+                        Metode
+                    </label>
+
+                    <select
+                        name="metode"
+                        class="form-select"
+                    >
+                        <option value="">Semua metode</option>
+
+                        {% for metode in metode_pembayaran_list %}
+                            <option
+                                value="{{ metode.pk }}"
+                                {% if selected_metode == metode.pk|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ metode.nama }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <div class="d-grid gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-search me-1"></i>
+                            Filter
+                        </button>
+
+                        <a
+                            href="{% url 'administrator:pembayaran_list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3">
+        <strong>
+            {{ total_data }} pembayaran ditemukan
+        </strong>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Kode Pembayaran</th>
+                    <th>Pesanan</th>
+                    <th>Pelanggan</th>
+                    <th>Metode</th>
+                    <th>Jumlah</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pembayaran in pembayaran_list %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+
+                        <td>
+                            <strong>
+                                {{ pembayaran.kode_pembayaran }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {{ pembayaran.pesanan.kode_pesanan }}
+                        </td>
+
+                        <td>
+                            <div class="fw-semibold">
+                                {{ pembayaran.pesanan.pelanggan.get_full_name|default:pembayaran.pesanan.pelanggan.username }}
+                            </div>
+
+                            <small class="text-muted">
+                                {{ pembayaran.pesanan.pelanggan.nomor_hp }}
+                            </small>
+                        </td>
+
+                        <td>
+                            {{ pembayaran.metode_pembayaran.nama }}
+                        </td>
+
+                        <td>
+                            <strong>
+                                Rp{{ pembayaran.jumlah|floatformat:0 }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {% if pembayaran.status == "berhasil" %}
+                                <span class="badge bg-success">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% elif pembayaran.status == "menunggu" %}
+                                <span class="badge bg-warning text-dark">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% elif pembayaran.status == "ditolak" %}
+                                <span class="badge bg-danger">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% elif pembayaran.status == "dikembalikan" %}
+                                <span class="badge bg-info text-dark">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    {{ pembayaran.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ pembayaran.tanggal_pembayaran|date:"d M Y H:i" }}
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'administrator:pembayaran_detail' pembayaran.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                <i class="bi bi-eye me-1"></i>
+                                Detail
+                            </a>
+                        </td>
+                    </tr>
+
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="9"
+                            class="text-center text-muted py-5"
+                        >
+                            Belum ada data pembayaran.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

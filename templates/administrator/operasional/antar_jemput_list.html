@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+
+{% block title %}Antar Jemput{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Operasional Antar Jemput</h2>
+        <p class="text-muted mb-0">
+            Pantau jadwal penjemputan dan pengantaran pesanan.
+        </p>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+            {{ message }}
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Total Antar Jemput</small>
+                <h3 class="fw-bold mb-0 mt-2">
+                    {{ total_antar_jemput }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Dijemput</small>
+                <h3 class="fw-bold mb-0 mt-2 text-primary">
+                    {{ total_jemput }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Diantar</small>
+                <h3 class="fw-bold mb-0 mt-2 text-success">
+                    {{ total_antar }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <small class="text-muted">Antar dan Jemput</small>
+                <h3 class="fw-bold mb-0 mt-2 text-warning">
+                    {{ total_antar_dan_jemput }}
+                </h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <label class="form-label">Pencarian</label>
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ query }}"
+                        class="form-control"
+                        placeholder="Kode, pelanggan, nomor HP, atau alamat"
+                    >
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">Jenis</label>
+                    <select name="jenis" class="form-select">
+                        <option value="">Semua jenis</option>
+
+                        {% for value, label in jenis_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_jenis == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        <option value="">Semua status</option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if selected_status == value %}selected{% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">Area</label>
+                    <select name="area" class="form-select">
+                        <option value="">Semua area</option>
+
+                        {% for area in area_list %}
+                            <option
+                                value="{{ area.pk }}"
+                                {% if selected_area == area.pk|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ area.nama_area }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-2">
+                    <label class="form-label">Jadwal</label>
+                    <select name="jadwal" class="form-select">
+                        <option value="">Semua jadwal</option>
+                        <option
+                            value="belum_diatur"
+                            {% if selected_jadwal == "belum_diatur" %}selected{% endif %}
+                        >
+                            Belum Diatur
+                        </option>
+                        <option
+                            value="sudah_diatur"
+                            {% if selected_jadwal == "sudah_diatur" %}selected{% endif %}
+                        >
+                            Sudah Diatur
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-lg-4">
+                    <label class="form-label">Petugas</label>
+                    <select name="petugas" class="form-select">
+                        <option value="">Semua petugas</option>
+
+                        {% for petugas in petugas_list %}
+                            <option
+                                value="{{ petugas.pk }}"
+                                {% if selected_petugas == petugas.pk|stringformat:"s" %}selected{% endif %}
+                            >
+                                {{ petugas.get_full_name|default:petugas.username }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-4 d-flex align-items-end gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search me-1"></i>
+                        Filter
+                    </button>
+
+                    <a
+                        href="{% url 'administrator:antar_jemput_list' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Reset
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between">
+        <strong>Daftar Antar Jemput</strong>
+        <span class="text-muted">
+            {{ page_obj.paginator.count }} data
+        </span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Pesanan</th>
+                    <th>Pelanggan</th>
+                    <th>Jenis</th>
+                    <th>Area</th>
+                    <th>Jadwal</th>
+                    <th>Petugas</th>
+                    <th>Status</th>
+                    <th class="text-end">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in pesanan_list %}
+                    <tr>
+                        <td>
+                            {{ page_obj.start_index|add:forloop.counter0 }}
+                        </td>
+
+                        <td>
+                            <strong>{{ pesanan.kode_pesanan }}</strong>
+                            <small class="text-muted d-block">
+                                Rp{{ pesanan.biaya_antar_jemput|floatformat:0 }}
+                            </small>
+                        </td>
+
+                        <td>
+                            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+
+                            <small class="text-muted d-block">
+                                {{ pesanan.pelanggan.nomor_hp }}
+                            </small>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-info text-dark">
+                                {{ pesanan.get_jenis_pengantaran_display }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if pesanan.area_layanan %}
+                                {{ pesanan.area_layanan.nama_area }}
+                            {% else %}
+                                <span class="text-danger">Belum dipilih</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if pesanan.tanggal_penjemputan %}
+                                <small class="d-block">
+                                    Jemput:
+                                    {{ pesanan.tanggal_penjemputan|date:"d M Y H:i" }}
+                                </small>
+                            {% endif %}
+
+                            {% if pesanan.tanggal_pengambilan %}
+                                <small class="d-block">
+                                    Antar:
+                                    {{ pesanan.tanggal_pengambilan|date:"d M Y H:i" }}
+                                </small>
+                            {% endif %}
+
+                            {% if not pesanan.tanggal_penjemputan and not pesanan.tanggal_pengambilan %}
+                                <span class="badge bg-warning text-dark">
+                                    Belum diatur
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if pesanan.petugas_laundry %}
+                                {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                            {% else %}
+                                <span class="text-danger">
+                                    Belum ditugaskan
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <span class="badge bg-primary">
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="text-end">
+                            <a
+                                href="{% url 'administrator:antar_jemput_detail' pesanan.pk %}"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                <i class="bi bi-truck me-1"></i>
+                                Atur
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-5">
+                            Tidak ada pesanan antar-jemput.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.previous_page_number }}&q={{ query|urlencode }}&jenis={{ selected_jenis }}&status={{ selected_status }}&area={{ selected_area }}&petugas={{ selected_petugas }}&jadwal={{ selected_jadwal }}"
+                    >
+                        Sebelumnya
+                    </a>
+                </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a
+                        class="page-link"
+                        href="?page={{ page_obj.next_page_number }}&q={{ query|urlencode }}&jenis={{ selected_jenis }}&status={{ selected_status }}&area={{ selected_area }}&petugas={{ selected_petugas }}&jadwal={{ selected_jadwal }}"
+                    >
+                        Berikutnya
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

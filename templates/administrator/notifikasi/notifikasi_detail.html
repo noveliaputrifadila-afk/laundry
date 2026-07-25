@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Notifikasi{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Detail Notifikasi</h2>
+        <p class="text-muted mb-0">
+            Informasi lengkap pemberitahuan.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:notifikasi_list' %}"
+        class="btn btn-outline-secondary"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show">
+            {{ message }}
+
+            <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="alert"
+            ></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <strong>Isi Notifikasi</strong>
+
+                {% if notifikasi.sudah_dibaca %}
+                    <span class="badge bg-success">
+                        Sudah Dibaca
+                    </span>
+                {% else %}
+                    <span class="badge bg-danger">
+                        Belum Dibaca
+                    </span>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div>
+                        {% if notifikasi.jenis == "pesanan" %}
+                            <i class="bi bi-bag-check fs-2 text-primary"></i>
+                        {% elif notifikasi.jenis == "status" %}
+                            <i class="bi bi-arrow-repeat fs-2 text-info"></i>
+                        {% elif notifikasi.jenis == "pembayaran" %}
+                            <i class="bi bi-credit-card fs-2 text-success"></i>
+                        {% elif notifikasi.jenis == "kendala" %}
+                            <i class="bi bi-exclamation-triangle fs-2 text-warning"></i>
+                        {% else %}
+                            <i class="bi bi-gear fs-2 text-secondary"></i>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <h4 class="fw-bold mb-1">
+                            {{ notifikasi.judul }}
+                        </h4>
+
+                        <span class="badge bg-secondary">
+                            {{ notifikasi.get_jenis_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-light rounded p-4">
+                    {{ notifikasi.pesan|linebreaksbr }}
+                </div>
+
+                {% if notifikasi.url %}
+                    <div class="mt-4">
+                        <a
+                            href="{{ notifikasi.url }}"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-box-arrow-up-right me-1"></i>
+                            Buka Halaman Terkait
+                        </a>
+                    </div>
+                {% elif notifikasi.pesanan %}
+                    <div class="mt-4">
+                        <a
+                            href="{% url 'administrator:pesanan_detail' notifikasi.pesanan.pk %}"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-receipt me-1"></i>
+                            Lihat Pesanan
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Informasi</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Penerima
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ notifikasi.penerima.get_full_name|default:notifikasi.penerima.username }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Jenis
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ notifikasi.get_jenis_display }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Dikirim pada
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ notifikasi.created_at|date:"d M Y H:i" }}
+                    </span>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Dibaca pada
+                    </small>
+
+                    <span class="fw-semibold">
+                        {% if notifikasi.dibaca_pada %}
+                            {{ notifikasi.dibaca_pada|date:"d M Y H:i" }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </span>
+                </div>
+
+                {% if notifikasi.pesanan %}
+                    <div>
+                        <small class="text-muted d-block">
+                            Pesanan
+                        </small>
+
+                        <span class="fw-semibold">
+                            {{ notifikasi.pesanan.kode_pesanan }}
+                        </span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <strong>Aksi</strong>
+            </div>
+
+            <div class="card-body">
+                {% if notifikasi.sudah_dibaca %}
+                    <form
+                        method="post"
+                        action="{% url 'administrator:notifikasi_tandai_belum_dibaca' notifikasi.pk %}"
+                        class="mb-2"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-outline-secondary w-100"
+                        >
+                            <i class="bi bi-envelope me-1"></i>
+                            Tandai Belum Dibaca
+                        </button>
+                    </form>
+                {% else %}
+                    <form
+                        method="post"
+                        action="{% url 'administrator:notifikasi_tandai_dibaca' notifikasi.pk %}"
+                        class="mb-2"
+                    >
+                        {% csrf_token %}
+
+                        <button
+                            type="submit"
+                            class="btn btn-outline-success w-100"
+                        >
+                            <i class="bi bi-check2 me-1"></i>
+                            Tandai Sudah Dibaca
+                        </button>
+                    </form>
+                {% endif %}
+
+                <form
+                    method="post"
+                    action="{% url 'administrator:notifikasi_hapus' notifikasi.pk %}"
+                    onsubmit="return confirm('Hapus notifikasi ini?')"
+                >
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-outline-danger w-100"
+                    >
+                        <i class="bi bi-trash me-1"></i>
+                        Hapus Notifikasi
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Detail Proses Laundry{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Detail Proses Laundry
+        </h2>
+
+        <p class="text-muted mb-0">
+            {{ pesanan.kode_pesanan }}
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a
+            href="{% url 'administrator:penugasan_detail' pesanan.pk %}"
+            class="btn btn-primary"
+        >
+            <i class="bi bi-person-check me-1"></i>
+            Atur Petugas
+        </a>
+
+        <a
+            href="{% url 'administrator:monitoring_list' %}"
+            class="btn btn-outline-secondary"
+        >
+            <i class="bi bi-arrow-left me-1"></i>
+            Kembali
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <strong>Informasi Proses</strong>
+
+                <span class="badge bg-primary">
+                    {{ pesanan.get_status_display }}
+                </span>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">
+                            Kode Pesanan
+                        </small>
+
+                        <span class="fw-semibold">
+                            {{ pesanan.kode_pesanan }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">
+                            Status Saat Ini
+                        </small>
+
+                        <span class="fw-semibold">
+                            {{ pesanan.get_status_display }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">
+                            Pelanggan
+                        </small>
+
+                        <span class="fw-semibold">
+                            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                        </span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">
+                            Petugas Laundry
+                        </small>
+
+                        {% if pesanan.petugas_laundry %}
+                            <span class="fw-semibold text-success">
+                                {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                            </span>
+                        {% else %}
+                            <span class="text-danger">
+                                Belum ditugaskan
+                            </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">
+                            Kasir
+                        </small>
+
+                        {% if pesanan.kasir %}
+                            <span class="fw-semibold">
+                                {{ pesanan.kasir.get_full_name|default:pesanan.kasir.username }}
+                            </span>
+                        {% else %}
+                            <span>-</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <small class="text-muted d-block">
+                            Terakhir Diperbarui
+                        </small>
+
+                        <span class="fw-semibold">
+                            {{ pesanan.updated_at|date:"d M Y H:i" }}
+                        </span>
+                    </div>
+                </div>
+
+                <hr>
+
+                <a
+                    href="{% url 'administrator:pesanan_detail' pesanan.pk %}"
+                    class="btn btn-outline-primary"
+                >
+                    <i class="bi bi-receipt me-1"></i>
+                    Lihat Detail Pesanan
+                </a>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <strong>Riwayat Proses Laundry</strong>
+            </div>
+
+            <div class="card-body">
+                {% for riwayat in riwayat_list %}
+                    <div class="d-flex gap-3 {% if not forloop.last %}border-bottom pb-4 mb-4{% endif %}">
+                        <div>
+                            <span
+                                class="d-flex align-items-center justify-content-center rounded-circle bg-primary text-white"
+                                style="width: 38px; height: 38px;"
+                            >
+                                <i class="bi bi-check2"></i>
+                            </span>
+                        </div>
+
+                        <div class="flex-grow-1">
+                            <div class="d-flex flex-wrap justify-content-between gap-2">
+                                <div>
+                                    <strong>
+                                        {% if riwayat.status_baru %}
+                                            {{ riwayat.get_status_baru_display }}
+                                        {% elif riwayat.status %}
+                                            {{ riwayat.get_status_display }}
+                                        {% else %}
+                                            Perubahan Status
+                                        {% endif %}
+                                    </strong>
+                                </div>
+
+                                <small class="text-muted">
+                                    {{ riwayat.created_at|date:"d M Y H:i" }}
+                                </small>
+                            </div>
+
+                            {% if riwayat.catatan %}
+                                <p class="text-muted mb-1 mt-2">
+                                    {{ riwayat.catatan|linebreaksbr }}
+                                </p>
+                            {% endif %}
+
+                            {% if riwayat.diubah_oleh %}
+                                <small class="text-muted">
+                                    Oleh:
+                                    {{ riwayat.diubah_oleh.get_full_name|default:riwayat.diubah_oleh.username }}
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-clock-history fs-1 d-block mb-3"></i>
+                        Belum ada riwayat proses untuk pesanan ini.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <strong>Detail Barang/Layanan</strong>
+            </div>
+
+            <div class="card-body">
+                {% for detail in pesanan.detail.all %}
+                    <div class="{% if not forloop.last %}border-bottom pb-3 mb-3{% endif %}">
+                        <div class="fw-semibold">
+                            {% if detail.layanan %}
+                                {{ detail.layanan.nama }}
+                            {% else %}
+                                Detail Laundry
+                            {% endif %}
+                        </div>
+
+                        {% if detail.berat %}
+                            <small class="text-muted d-block">
+                                Berat: {{ detail.berat }} kg
+                            </small>
+                        {% endif %}
+
+                        {% if detail.jumlah %}
+                            <small class="text-muted d-block">
+                                Jumlah: {{ detail.jumlah }} item
+                            </small>
+                        {% endif %}
+
+                        {% if detail.catatan %}
+                            <small class="text-muted d-block">
+                                {{ detail.catatan }}
+                            </small>
+                        {% endif %}
+                    </div>
+                {% empty %}
+                    <span class="text-muted">
+                        Belum ada detail barang.
+                    </span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white py-3">
+                <strong>Informasi Waktu</strong>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted d-block">
+                        Pesanan Dibuat
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ pesanan.created_at|date:"d M Y H:i" }}
+                    </span>
+                </div>
+
+                <div>
+                    <small class="text-muted d-block">
+                        Terakhir Diperbarui
+                    </small>
+
+                    <span class="fw-semibold">
+                        {{ pesanan.updated_at|date:"d M Y H:i" }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,319 @@
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="brand-icon">
+                        <i class="bi bi-basket2-fill"></i>
+                    </div>
+
+                    <div>
+                        <h4>Laundry</h4>
+                        <small>Management System</small>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-menu">
+
+                <!-- Dashboard -->
+                <a
+                    href="{% url 'administrator:dashboard' %}"
+                    class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                >
+                    <i class="bi bi-grid-1x2-fill"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <!-- Manajemen Pengguna -->
+                <div class="sidebar-group">
+                    <a
+                        class="nav-link sidebar-toggle {% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'user_create' or request.resolver_match.url_name == 'user_update' or request.resolver_match.url_name == 'user_detail' or request.resolver_match.url_name == 'pelanggan_verifikasi' or request.resolver_match.url_name == 'verifikasi_pelanggan' or request.resolver_match.url_name == 'tolak_pelanggan' %}active{% endif %}"
+                        data-bs-toggle="collapse"
+                        href="#menuPengguna"
+                        role="button"
+                        aria-expanded="{% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'user_create' or request.resolver_match.url_name == 'user_update' or request.resolver_match.url_name == 'user_detail' or request.resolver_match.url_name == 'pelanggan_verifikasi' or request.resolver_match.url_name == 'verifikasi_pelanggan' or request.resolver_match.url_name == 'tolak_pelanggan' %}true{% else %}false{% endif %}"
+                        aria-controls="menuPengguna"
+                    >
+                        <i class="bi bi-people-fill"></i>
+                        <span>Manajemen Pengguna</span>
+                        <i class="bi bi-chevron-down toggle-icon"></i>
+                    </a>
+
+                    <div
+                        id="menuPengguna"
+                        class="collapse {% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'user_create' or request.resolver_match.url_name == 'user_update' or request.resolver_match.url_name == 'user_detail' or request.resolver_match.url_name == 'pelanggan_verifikasi' or request.resolver_match.url_name == 'verifikasi_pelanggan' or request.resolver_match.url_name == 'tolak_pelanggan' %}show{% endif %}"
+                    >
+                        <div class="submenu">
+                            <a
+                                href="{% url 'administrator:user_list' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'user_list' or request.resolver_match.url_name == 'user_create' or request.resolver_match.url_name == 'user_update' or request.resolver_match.url_name == 'user_detail' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Data Pengguna
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:pelanggan_verifikasi' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'pelanggan_verifikasi' or request.resolver_match.url_name == 'verifikasi_pelanggan' or request.resolver_match.url_name == 'tolak_pelanggan' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Verifikasi Pelanggan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Master -->
+                <div class="sidebar-group">
+                    <a
+                        class="nav-link sidebar-toggle {% if request.resolver_match.url_name == 'kategori_list' or request.resolver_match.url_name == 'kategori_create' or request.resolver_match.url_name == 'kategori_update' or request.resolver_match.url_name == 'layanan_list' or request.resolver_match.url_name == 'layanan_create' or request.resolver_match.url_name == 'layanan_update' or request.resolver_match.url_name == 'tarif_list' or request.resolver_match.url_name == 'tarif_create' or request.resolver_match.url_name == 'tarif_update' or request.resolver_match.url_name == 'promo_list' or request.resolver_match.url_name == 'promo_create' or request.resolver_match.url_name == 'promo_update' or request.resolver_match.url_name == 'metode_pembayaran_list' or request.resolver_match.url_name == 'area_layanan_list' %}active{% endif %}"
+                        data-bs-toggle="collapse"
+                        href="#menuDataMaster"
+                        role="button"
+                        aria-expanded="{% if request.resolver_match.url_name == 'kategori_list' or request.resolver_match.url_name == 'kategori_create' or request.resolver_match.url_name == 'kategori_update' or request.resolver_match.url_name == 'layanan_list' or request.resolver_match.url_name == 'layanan_create' or request.resolver_match.url_name == 'layanan_update' or request.resolver_match.url_name == 'tarif_list' or request.resolver_match.url_name == 'tarif_create' or request.resolver_match.url_name == 'tarif_update' or request.resolver_match.url_name == 'promo_list' or request.resolver_match.url_name == 'promo_create' or request.resolver_match.url_name == 'promo_update' or request.resolver_match.url_name == 'metode_pembayaran_list' or request.resolver_match.url_name == 'area_layanan_list' %}true{% else %}false{% endif %}"
+                        aria-controls="menuDataMaster"
+                    >
+                        <i class="bi bi-database-fill"></i>
+                        <span>Data Master</span>
+                        <i class="bi bi-chevron-down toggle-icon"></i>
+                    </a>
+
+                    <div
+                        id="menuDataMaster"
+                        class="collapse {% if request.resolver_match.url_name == 'kategori_list' or request.resolver_match.url_name == 'kategori_create' or request.resolver_match.url_name == 'kategori_update' or request.resolver_match.url_name == 'layanan_list' or request.resolver_match.url_name == 'layanan_create' or request.resolver_match.url_name == 'layanan_update' or request.resolver_match.url_name == 'tarif_list' or request.resolver_match.url_name == 'tarif_create' or request.resolver_match.url_name == 'tarif_update' or request.resolver_match.url_name == 'promo_list' or request.resolver_match.url_name == 'promo_create' or request.resolver_match.url_name == 'promo_update' or request.resolver_match.url_name == 'metode_pembayaran_list' or request.resolver_match.url_name == 'area_layanan_list' %}show{% endif %}"
+                    >
+                        <div class="submenu">
+                            <a
+                                href="{% url 'administrator:kategori_list' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'kategori_list' or request.resolver_match.url_name == 'kategori_create' or request.resolver_match.url_name == 'kategori_update' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Kategori Layanan
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:layanan_list' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'layanan_list' or request.resolver_match.url_name == 'layanan_create' or request.resolver_match.url_name == 'layanan_update' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Layanan
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:tarif_list' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'tarif_list' or request.resolver_match.url_name == 'tarif_create' or request.resolver_match.url_name == 'tarif_update' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Tarif
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:promo_list' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'promo_list' or request.resolver_match.url_name == 'promo_create' or request.resolver_match.url_name == 'promo_update' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Promo
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:metode_pembayaran_list' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'metode_pembayaran_list' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Metode Pembayaran
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:area_layanan_list' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'area_layanan_list' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Area Layanan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Transaksi -->
+                {% with url_name=request.resolver_match.url_name %}
+                <div class="sidebar-group">
+                    <a
+                        class="nav-link sidebar-toggle {% if url_name == 'pesanan_list' or url_name == 'pesanan_detail' or 'invoice_' in url_name or 'pembayaran_' in url_name %}active{% endif %}"
+                        data-bs-toggle="collapse"
+                        href="#menuTransaksi"
+                        role="button"
+                        aria-expanded="{% if url_name == 'pesanan_list' or url_name == 'pesanan_detail' or 'invoice_' in url_name or 'pembayaran_' in url_name %}true{% else %}false{% endif %}"
+                        aria-controls="menuTransaksi"
+                    >
+                        <i class="bi bi-receipt-cutoff"></i>
+                        <span>Transaksi</span>
+                        <i class="bi bi-chevron-down toggle-icon"></i>
+                    </a>
+
+                    <div
+                        id="menuTransaksi"
+                        class="collapse {% if url_name == 'pesanan_list' or url_name == 'pesanan_detail' or 'invoice_' in url_name or 'pembayaran_' in url_name %}show{% endif %}"
+                    >
+                        <div class="submenu">
+                            <a
+                                href="{% url 'administrator:pesanan_list' %}"
+                                class="submenu-link {% if url_name == 'pesanan_list' or url_name == 'pesanan_detail' or url_name == 'pesanan_konfirmasi' or url_name == 'pesanan_tolak' or url_name == 'pesanan_assign_petugas' or url_name == 'pesanan_ubah_status' or url_name == 'pesanan_ubah_pembayaran' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Semua Pesanan
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:invoice_list' %}"
+                                class="submenu-link {% if 'invoice_' in url_name %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Invoice
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:pembayaran_list' %}"
+                                class="submenu-link {% if 'pembayaran_' in url_name %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Pembayaran
+                            </a>
+                            
+                        </div>
+                    </div>
+                </div>
+                <a
+                    href="{% url 'administrator:kendala_list' %}"
+                    class="nav-link {% if 'kendala_' in url_name %}active{% endif %}"
+                >
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>Kendala Laundry</span>
+                </a>
+                <a
+                    href="{% url 'administrator:notifikasi_list' %}"
+                    class="nav-link {% if 'notifikasi_' in request.resolver_match.url_name %}active{% endif %}"
+                >
+                    <i class="bi bi-bell-fill"></i>
+                    <span>Notifikasi</span>
+                </a>
+                {% endwith %}
+
+                {% with url_name=request.resolver_match.url_name %}
+                <div class="sidebar-group">
+                    <a
+                        class="nav-link sidebar-toggle {% if 'penugasan_' in url_name or 'monitoring_' in url_name or 'antar_jemput_' in url_name or 'riwayat_status_' in url_name %}active{% endif %}"
+                        data-bs-toggle="collapse"
+                        href="#menuOperasional"
+                        role="button"
+                        aria-expanded="{% if 'penugasan_' in url_name or 'monitoring_' in url_name or 'antar_jemput_' in url_name or 'riwayat_status_' in url_name %}true{% else %}false{% endif %}"
+                        aria-controls="menuOperasional"
+                    >
+                        <i class="bi bi-gear-wide-connected"></i>
+                        <span>Operasional</span>
+                        <i class="bi bi-chevron-down toggle-icon"></i>
+                    </a>
+
+                    <div
+                        id="menuOperasional"
+                        class="collapse {% if 'penugasan_' in url_name or 'monitoring_' in url_name or 'antar_jemput_' in url_name or 'riwayat_status_' in url_name %}show{% endif %}"
+                    >
+                        <div class="submenu">
+                            <a
+                                href="{% url 'administrator:penugasan_list' %}"
+                                class="submenu-link {% if 'penugasan_' in url_name or 'monitoring_' in url_name or 'antar_jemput_' in url_name or 'riwayat_status_' in url_name %}active{%endif%}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Penugasan Petugas
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:monitoring_list' %}"
+                                class="submenu-link {% if 'monitoring_' in url_name %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Proses Laundry
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:antar_jemput_list' %}"
+                                class="submenu-link {% if 'antar_jemput_' in url_name %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Antar Jemput
+                            </a>
+
+                            <a
+                                href="{% url 'administrator:riwayat_status_list' %}"
+                                class="submenu-link {% if 'riwayat_status_' in url_name %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Riwayat Status
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+
+                <!-- Laporan -->
+                <div class="sidebar-group">
+                    <a
+                        class="nav-link sidebar-toggle {% if request.resolver_match.url_name == 'laporan_pesanan' %}active{% endif %}"
+                        data-bs-toggle="collapse"
+                        href="#menuLaporan"
+                        role="button"
+                        aria-expanded="{% if request.resolver_match.url_name == 'laporan_pesanan' %}true{% else %}false{% endif %}"
+                        aria-controls="menuLaporan"
+                    >
+                        <i class="bi bi-bar-chart-fill"></i>
+                        <span>Laporan</span>
+                        <i class="bi bi-chevron-down toggle-icon"></i>
+                    </a>
+
+                    <div
+                        id="menuLaporan"
+                        class="collapse {% if request.resolver_match.url_name == 'laporan_pesanan' %}show{% endif %}"
+                    >
+                        <div class="submenu">
+                            <a
+                                href="{% url 'administrator:laporan_pesanan' %}"
+                                class="submenu-link {% if request.resolver_match.url_name == 'laporan_pesanan' %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Pesanan dan Pendapatan
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-group">
+                    <a
+                        class="nav-link sidebar-toggle {% if 'pengaturan_' in url_name %}active{% endif %}"
+                        data-bs-toggle="collapse"
+                        href="#menuSistem"
+                        role="button"
+                        aria-expanded="{% if 'pengaturan_' in url_name %}true{% else %}false{% endif %}"
+                        aria-controls="menuSistem"
+                    >
+                        <i class="bi bi-sliders"></i>
+                        <span>Sistem</span>
+                        <i class="bi bi-chevron-down toggle-icon"></i>
+                    </a>
+
+                    <div
+                        id="menuSistem"
+                        class="collapse {% if 'pengaturan_' in url_name %}show{% endif %}"
+                    >
+                        <div class="submenu">
+                            <a
+                                href="{% url 'administrator:pengaturan_sistem' %}"
+                                class="submenu-link {% if 'pengaturan_' in url_name %}active{% endif %}"
+                            >
+                                <span class="submenu-dot"></span>
+                                Pengaturan Sistem
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </nav>
+        </aside>

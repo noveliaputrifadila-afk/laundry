@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Tolak Pesanan
+{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="fw-bold mb-1">
+        Tolak Pesanan
+    </h2>
+
+    <p class="text-muted mb-0">
+        {{ pesanan.kode_pesanan }}
+    </p>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <div class="alert alert-danger">
+            Pesanan yang ditolak tidak dapat diproses.
+            Tuliskan alasan yang jelas untuk pelanggan.
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label
+                    for="{{ form.alasan_penolakan.id_for_label }}"
+                    class="form-label"
+                >
+                    {{ form.alasan_penolakan.label }}
+                </label>
+
+                {{ form.alasan_penolakan }}
+
+                {% for error in form.alasan_penolakan.errors %}
+                    <div class="text-danger small mt-1">
+                        {{ error }}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-danger"
+                onclick="
+                    return confirm(
+                        'Yakin ingin menolak pesanan ini?'
+                    )
+                "
+            >
+                Tolak Pesanan
+            </button>
+
+            <a
+                href="{% url 'administrator:pesanan_detail' pesanan.pk %}"
+                class="btn btn-outline-secondary"
+            >
+                Batal
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

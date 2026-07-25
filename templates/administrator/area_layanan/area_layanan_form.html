@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ judul }}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            {{ judul }}
+        </h2>
+
+        <p class="text-muted mb-0">
+            {{ deskripsi }}
+        </p>
+    </div>
+
+    <a
+        href="{% url 'administrator:area_layanan_list' %}"
+        class="btn btn-outline-secondary mt-3 mt-md-0"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-8 mb-3">
+                    <label
+                        for="{{ form.nama_area.id_for_label }}"
+                        class="form-label"
+                    >
+                        {{ form.nama_area.label }}
+                    </label>
+
+                    {{ form.nama_area }}
+
+                    {% if form.nama_area.help_text %}
+                        <div class="form-text">
+                            {{ form.nama_area.help_text }}
+                        </div>
+                    {% endif %}
+
+                    {% for error in form.nama_area.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label
+                        for="{{ form.kode_pos.id_for_label }}"
+                        class="form-label"
+                    >
+                        {{ form.kode_pos.label }}
+                    </label>
+
+                    {{ form.kode_pos }}
+
+                    {% if form.kode_pos.help_text %}
+                        <div class="form-text">
+                            {{ form.kode_pos.help_text }}
+                        </div>
+                    {% endif %}
+
+                    {% for error in form.kode_pos.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label
+                        for="{{ form.biaya_antar.id_for_label }}"
+                        class="form-label"
+                    >
+                        {{ form.biaya_antar.label }}
+                    </label>
+
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            Rp
+                        </span>
+
+                        {{ form.biaya_antar }}
+                    </div>
+
+                    {% if form.biaya_antar.help_text %}
+                        <div class="form-text">
+                            {{ form.biaya_antar.help_text }}
+                        </div>
+                    {% endif %}
+
+                    {% for error in form.biaya_antar.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label
+                        for="{{ form.biaya_jemput.id_for_label }}"
+                        class="form-label"
+                    >
+                        {{ form.biaya_jemput.label }}
+                    </label>
+
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            Rp
+                        </span>
+
+                        {{ form.biaya_jemput }}
+                    </div>
+
+                    {% if form.biaya_jemput.help_text %}
+                        <div class="form-text">
+                            {{ form.biaya_jemput.help_text }}
+                        </div>
+                    {% endif %}
+
+                    {% for error in form.biaya_jemput.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label
+                        for="{{ form.estimasi_menit.id_for_label }}"
+                        class="form-label"
+                    >
+                        {{ form.estimasi_menit.label }}
+                    </label>
+
+                    <div class="input-group">
+                        {{ form.estimasi_menit }}
+
+                        <span class="input-group-text">
+                            menit
+                        </span>
+                    </div>
+
+                    {% if form.estimasi_menit.help_text %}
+                        <div class="form-text">
+                            {{ form.estimasi_menit.help_text }}
+                        </div>
+                    {% endif %}
+
+                    {% for error in form.estimasi_menit.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 mb-4">
+                    <div class="form-check">
+                        {{ form.is_active }}
+
+                        <label
+                            for="{{ form.is_active.id_for_label }}"
+                            class="form-check-label"
+                        >
+                            {{ form.is_active.label }}
+                        </label>
+                    </div>
+
+                    {% for error in form.is_active.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button
+                type="submit"
+                class="btn btn-primary"
+            >
+                <i class="bi bi-save me-1"></i>
+                {{ tombol }}
+            </button>
+
+            <a
+                href="{% url 'administrator:area_layanan_list' %}"
+                class="btn btn-outline-secondary"
+            >
+                Batal
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

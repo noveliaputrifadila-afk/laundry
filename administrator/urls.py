@@ -1,0 +1,574 @@
+from django.urls import path
+
+
+from .views_dashboard import dashboard
+from .views_auth import (
+    pelanggan_menunggu_verifikasi,
+    tolak_pelanggan,
+    verifikasi_pelanggan,
+)
+from .views_user import (
+    user_create,
+    user_detail,
+    user_list,
+    user_toggle_active,
+    user_update,
+    user_verify,
+)
+from .views_kategori import (
+    kategori_create,
+    kategori_detail,
+    kategori_list,
+    kategori_toggle_active,
+    kategori_update,
+)
+from .views_layanan import (
+    layanan_create,
+    layanan_detail,
+    layanan_list,
+    layanan_toggle_active,
+    layanan_update,
+)
+from .views_tarif import (
+    tarif_create,
+    tarif_detail,
+    tarif_list,
+    tarif_toggle_active,
+    tarif_update,
+)
+from .views_promo import (
+    promo_create,
+    promo_detail,
+    promo_list,
+    promo_toggle_active,
+    promo_update,
+)
+from .views_metode_pembayaran import (
+    metode_pembayaran_create,
+    metode_pembayaran_detail,
+    metode_pembayaran_list,
+    metode_pembayaran_toggle_active,
+    metode_pembayaran_update,
+)
+from .views_area_layanan import (
+    area_layanan_create,
+    area_layanan_detail,
+    area_layanan_list,
+    area_layanan_toggle_active,
+    area_layanan_update,
+)
+from .views_pengaturan import (
+    pengaturan_sistem,
+    pengaturan_toggle_pesanan,
+)
+from .views_pesanan import (
+    pesanan_assign_petugas,
+    pesanan_detail,
+    pesanan_konfirmasi,
+    pesanan_list,
+    pesanan_tolak,
+    pesanan_ubah_pembayaran,
+    pesanan_ubah_status,
+)
+from .views_laporan import (
+    laporan_pesanan,
+    laporan_pesanan_csv,
+)
+from .views_invoice import (
+    invoice_batalkan,
+    invoice_create,
+    invoice_detail,
+    invoice_list,
+    invoice_terbitkan,
+    invoice_update,
+)
+from .views_pembayaran import (
+    pembayaran_detail,
+    pembayaran_kembalikan,
+    pembayaran_list,
+    pembayaran_tolak,
+    pembayaran_verifikasi,
+)
+from .views_kendala import (
+    kendala_buka_kembali,
+    kendala_detail,
+    kendala_list,
+    kendala_selesaikan,
+    kendala_tindak_lanjut,
+)
+from .views_notifikasi import (
+    notifikasi_detail,
+    notifikasi_hapus,
+    notifikasi_hapus_semua_dibaca,
+    notifikasi_list,
+    notifikasi_tandai_belum_dibaca,
+    notifikasi_tandai_dibaca,
+    notifikasi_tandai_semua_dibaca,
+)
+from .views_penugasan import (
+    penugasan_assign,
+    penugasan_detail,
+    penugasan_hapus,
+    penugasan_list,
+)
+from .views_monitoring import (
+    monitoring_detail,
+    monitoring_list,
+)
+from .views_antar_jemput import (
+    antar_jemput_detail,
+    antar_jemput_list,
+    antar_jemput_update,
+)
+from .views_riwayat_status import (
+    riwayat_status_detail,
+    riwayat_status_list,
+)
+
+app_name = "administrator"
+
+
+urlpatterns = [
+    path(
+        "",
+        dashboard,
+        name="dashboard",
+    ),
+
+    
+
+    path(
+        "pelanggan/verifikasi/",
+        pelanggan_menunggu_verifikasi,
+        name="pelanggan_verifikasi",
+    ),
+    path(
+        "pelanggan/<int:pk>/verifikasi/",
+        verifikasi_pelanggan,
+        name="verifikasi_pelanggan",
+    ),
+    path(
+        "pelanggan/<int:pk>/tolak/",
+        tolak_pelanggan,
+        name="tolak_pelanggan",
+    ),
+    path(
+    "pengguna/",
+    user_list,
+    name="user_list",
+    ),
+    path(
+        "pengguna/tambah/",
+        user_create,
+        name="user_create",
+    ),
+    path(
+        "pengguna/<int:pk>/",
+        user_detail,
+        name="user_detail",
+    ),
+    path(
+        "pengguna/<int:pk>/edit/",
+        user_update,
+        name="user_update",
+    ),
+    path(
+        "pengguna/<int:pk>/ubah-status/",
+        user_toggle_active,
+        name="user_toggle_active",
+    ),
+    path(
+        "pengguna/<int:pk>/verifikasi/",
+        user_verify,
+        name="user_verify",
+    ),
+    path(
+        "kategori/",
+        kategori_list,
+        name="kategori_list",
+    ),
+    path(
+        "kategori/tambah/",
+        kategori_create,
+        name="kategori_create",
+    ),
+    path(
+        "kategori/<int:pk>/",
+        kategori_detail,
+        name="kategori_detail",
+    ),
+    path(
+        "kategori/<int:pk>/edit/",
+        kategori_update,
+        name="kategori_update",
+    ),
+    path(
+        "kategori/<int:pk>/ubah-status/",
+        kategori_toggle_active,
+        name="kategori_toggle_active",
+    ),
+    path(
+        "layanan/",
+        layanan_list,
+        name="layanan_list",
+    ),
+    path(
+        "layanan/tambah/",
+        layanan_create,
+        name="layanan_create",
+    ),
+    path(
+        "layanan/<int:pk>/",
+        layanan_detail,
+        name="layanan_detail",
+    ),
+    path(
+        "layanan/<int:pk>/edit/",
+        layanan_update,
+        name="layanan_update",
+    ),
+    path(
+        "layanan/<int:pk>/ubah-status/",
+        layanan_toggle_active,
+        name="layanan_toggle_active",
+    ),
+    path(
+        "tarif/",
+        tarif_list,
+        name="tarif_list",
+    ),
+    path(
+        "tarif/tambah/",
+        tarif_create,
+        name="tarif_create",
+    ),
+    path(
+        "tarif/<int:pk>/",
+        tarif_detail,
+        name="tarif_detail",
+    ),
+    path(
+        "tarif/<int:pk>/edit/",
+        tarif_update,
+        name="tarif_update",
+    ),
+    path(
+        "tarif/<int:pk>/ubah-status/",
+        tarif_toggle_active,
+        name="tarif_toggle_active",
+    ),
+# Promo
+    path(
+        "promo/",
+        promo_list,
+        name="promo_list",
+    ),
+    path(
+        "promo/tambah/",
+        promo_create,
+        name="promo_create",
+    ),
+    path(
+        "promo/<int:pk>/",
+        promo_detail,
+        name="promo_detail",
+    ),
+    path(
+        "promo/<int:pk>/edit/",
+        promo_update,
+        name="promo_update",
+    ),
+    path(
+        "promo/<int:pk>/ubah-status/",
+        promo_toggle_active,
+        name="promo_toggle_active",
+    ),
+# Metode pembayaran
+    path(
+        "metode-pembayaran/",
+        metode_pembayaran_list,
+        name="metode_pembayaran_list",
+    ),
+    path(
+        "metode-pembayaran/tambah/",
+        metode_pembayaran_create,
+        name="metode_pembayaran_create",
+    ),
+    path(
+        "metode-pembayaran/<int:pk>/",
+        metode_pembayaran_detail,
+        name="metode_pembayaran_detail",
+    ),
+    path(
+        "metode-pembayaran/<int:pk>/edit/",
+        metode_pembayaran_update,
+        name="metode_pembayaran_update",
+    ),
+    path(
+        "metode-pembayaran/<int:pk>/ubah-status/",
+        metode_pembayaran_toggle_active,
+        name="metode_pembayaran_toggle_active",
+    ),
+# Area layanan antar-jemput
+    path(
+        "area-layanan/",
+        area_layanan_list,
+        name="area_layanan_list",
+    ),
+    path(
+        "area-layanan/tambah/",
+        area_layanan_create,
+        name="area_layanan_create",
+    ),
+    path(
+        "area-layanan/<int:pk>/",
+        area_layanan_detail,
+        name="area_layanan_detail",
+    ),
+    path(
+        "area-layanan/<int:pk>/edit/",
+        area_layanan_update,
+        name="area_layanan_update",
+    ),
+    path(
+        "area-layanan/<int:pk>/ubah-status/",
+        area_layanan_toggle_active,
+        name="area_layanan_toggle_active",
+    ),
+# Pengaturan sistem
+    path(
+        "pengaturan/",
+        pengaturan_sistem,
+        name="pengaturan_sistem",
+    ),
+    path(
+        "pengaturan/ubah-status-pesanan/",
+        pengaturan_toggle_pesanan,
+        name="pengaturan_toggle_pesanan",
+    ),
+# Manajemen pesanan
+    path(
+        "pesanan/",
+        pesanan_list,
+        name="pesanan_list",
+    ),
+    path(
+        "pesanan/<int:pk>/",
+        pesanan_detail,
+        name="pesanan_detail",
+    ),
+    path(
+        "pesanan/<int:pk>/konfirmasi/",
+        pesanan_konfirmasi,
+        name="pesanan_konfirmasi",
+    ),
+    path(
+        "pesanan/<int:pk>/tolak/",
+        pesanan_tolak,
+        name="pesanan_tolak",
+    ),
+    path(
+        "pesanan/<int:pk>/petugas/",
+        pesanan_assign_petugas,
+        name="pesanan_assign_petugas",
+    ),
+    path(
+        "pesanan/<int:pk>/status/",
+        pesanan_ubah_status,
+        name="pesanan_ubah_status",
+    ),
+    path(
+        "pesanan/<int:pk>/status-pembayaran/",
+        pesanan_ubah_pembayaran,
+        name="pesanan_ubah_pembayaran",
+    ),
+# Laporan administrator
+    path(
+        "laporan/pesanan/",
+        laporan_pesanan,
+        name="laporan_pesanan",
+    ),
+    path(
+        "laporan/pesanan/csv/",
+        laporan_pesanan_csv,
+        name="laporan_pesanan_csv",
+    ),
+# Invoice
+    path(
+        "invoice/",
+        invoice_list,
+        name="invoice_list",
+    ),
+    path(
+        "invoice/tambah/",
+        invoice_create,
+        name="invoice_create",
+    ),
+    path(
+        "invoice/<int:pk>/",
+        invoice_detail,
+        name="invoice_detail",
+    ),
+    path(
+        "invoice/<int:pk>/edit/",
+        invoice_update,
+        name="invoice_update",
+    ),
+    path(
+        "invoice/<int:pk>/terbitkan/",
+        invoice_terbitkan,
+        name="invoice_terbitkan",
+    ),
+    path(
+        "invoice/<int:pk>/batalkan/",
+        invoice_batalkan,
+        name="invoice_batalkan",
+    ),
+# Manajemen pembayaran
+    path(
+        "pembayaran/",
+        pembayaran_list,
+        name="pembayaran_list",
+    ),
+    path(
+        "pembayaran/<int:pk>/",
+        pembayaran_detail,
+        name="pembayaran_detail",
+    ),
+    path(
+        "pembayaran/<int:pk>/verifikasi/",
+        pembayaran_verifikasi,
+        name="pembayaran_verifikasi",
+    ),
+    path(
+        "pembayaran/<int:pk>/tolak/",
+        pembayaran_tolak,
+        name="pembayaran_tolak",
+    ),
+    path(
+        "pembayaran/<int:pk>/kembalikan/",
+        pembayaran_kembalikan,
+        name="pembayaran_kembalikan",
+    ),
+# Kendala laundry
+    path(
+        "kendala/",
+        kendala_list,
+        name="kendala_list",
+    ),
+    path(
+        "kendala/<int:pk>/",
+        kendala_detail,
+        name="kendala_detail",
+    ),
+    path(
+        "kendala/<int:pk>/tindak-lanjut/",
+        kendala_tindak_lanjut,
+        name="kendala_tindak_lanjut",
+    ),
+    path(
+        "kendala/<int:pk>/selesaikan/",
+        kendala_selesaikan,
+        name="kendala_selesaikan",
+    ),
+    path(
+        "kendala/<int:pk>/buka-kembali/",
+        kendala_buka_kembali,
+        name="kendala_buka_kembali",
+    ),
+# Notifikasi
+    path(
+        "notifikasi/",
+        notifikasi_list,
+        name="notifikasi_list",
+    ),
+    path(
+        "notifikasi/<int:pk>/",
+        notifikasi_detail,
+        name="notifikasi_detail",
+    ),
+    path(
+        "notifikasi/<int:pk>/tandai-dibaca/",
+        notifikasi_tandai_dibaca,
+        name="notifikasi_tandai_dibaca",
+    ),
+    path(
+        "notifikasi/<int:pk>/tandai-belum-dibaca/",
+        notifikasi_tandai_belum_dibaca,
+        name="notifikasi_tandai_belum_dibaca",
+    ),
+    path(
+        "notifikasi/tandai-semua-dibaca/",
+        notifikasi_tandai_semua_dibaca,
+        name="notifikasi_tandai_semua_dibaca",
+    ),
+    path(
+        "notifikasi/<int:pk>/hapus/",
+        notifikasi_hapus,
+        name="notifikasi_hapus",
+    ),
+    path(
+        "notifikasi/hapus-semua-dibaca/",
+        notifikasi_hapus_semua_dibaca,
+        name="notifikasi_hapus_semua_dibaca",
+    ),
+# Operasional - Penugasan petugas
+    path(
+        "operasional/penugasan/",
+        penugasan_list,
+        name="penugasan_list",
+    ),
+    path(
+        "operasional/penugasan/<int:pk>/",
+        penugasan_detail,
+        name="penugasan_detail",
+    ),
+    path(
+        "operasional/penugasan/<int:pk>/assign/",
+        penugasan_assign,
+        name="penugasan_assign",
+    ),
+    path(
+        "operasional/penugasan/<int:pk>/hapus/",
+        penugasan_hapus,
+        name="penugasan_hapus",
+    ),
+# Operasional - Monitoring proses laundry
+    path(
+        "operasional/proses-laundry/",
+        monitoring_list,
+        name="monitoring_list",
+    ),
+    path(
+        "operasional/proses-laundry/<int:pk>/",
+        monitoring_detail,
+        name="monitoring_detail",
+    ),
+# Operasional - Antar Jemput
+    path(
+        "operasional/antar-jemput/",
+        antar_jemput_list,
+        name="antar_jemput_list",
+    ),
+    path(
+        "operasional/antar-jemput/<int:pk>/",
+        antar_jemput_detail,
+        name="antar_jemput_detail",
+    ),
+    path(
+        "operasional/antar-jemput/<int:pk>/update/",
+        antar_jemput_update,
+        name="antar_jemput_update",
+    ),
+# Operasional - Riwayat Status
+    path(
+        "operasional/riwayat-status/",
+        riwayat_status_list,
+        name="riwayat_status_list",
+    ),
+    path(
+        "operasional/riwayat-status/<int:pk>/",
+        riwayat_status_detail,
+        name="riwayat_status_detail",
+    ),
+]

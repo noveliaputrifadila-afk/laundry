@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detail Tugas {{ pesanan.kode_pesanan }}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .detail-label {
+        color: #64748b;
+        font-size: 0.82rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        color: #172033;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Detail Tugas
+        </h2>
+
+        <p class="text-muted mb-0">
+            {{ pesanan.kode_pesanan }}
+        </p>
+    </div>
+
+    <a
+        href="{% url 'petugas:tugas_list' %}"
+        class="btn btn-outline-secondary"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <div class="card detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Informasi Pesanan
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="detail-label">Kode Pesanan</div>
+                        <div class="detail-value">
+                            {{ pesanan.kode_pesanan }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+                            {{ pesanan.get_status_display }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">Tanggal Masuk</div>
+                        <div class="detail-value">
+                            {{ pesanan.created_at|date:"d F Y H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">Estimasi Selesai</div>
+                        <div class="detail-value">
+                            {{ pesanan.estimasi_selesai|date:"d F Y H:i"|default:"Belum ditentukan" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">Metode Pembayaran</div>
+                        <div class="detail-value">
+                            {% if pesanan.metode_pembayaran %}
+                                {{ pesanan.metode_pembayaran.nama }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">Status Pembayaran</div>
+                        <div class="detail-value">
+                            {{ pesanan.get_status_pembayaran_display }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card detail-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Detail Barang dan Layanan
+                </h5>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Layanan</th>
+                            <th>Jumlah/Berat</th>
+                            <th>Harga</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for detail in pesanan.detail.all %}
+                            <tr>
+                                <td>
+                                    {{ detail.layanan.nama }}
+                                </td>
+
+                                <td>
+                                    {{ detail.jumlah }}
+                                </td>
+
+                                <td>
+                                    Rp{{ detail.harga|floatformat:0 }}
+                                </td>
+
+                                <td class="fw-semibold">
+                                    Rp{{ detail.subtotal|floatformat:0 }}
+                                </td>
+                            </tr>
+
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">
+                                    Tidak ada detail layanan.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <div class="card detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Informasi Pelanggan
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="detail-label">Nama Pelanggan</div>
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label">Nomor HP</div>
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.nomor_hp|default:"-" }}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">
+                        {{ pesanan.pelanggan.email|default:"-" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card detail-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Total Pesanan
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Biaya Laundry</span>
+                    <strong>
+                        Rp{{ pesanan.total_biaya|floatformat:0 }}
+                    </strong>
+                </div>
+
+                <div class="d-flex justify-content-between mb-3">
+                    <span class="text-muted">Biaya Antar-Jemput</span>
+                    <strong>
+                        Rp{{ pesanan.biaya_antar_jemput|floatformat:0 }}
+                    </strong>
+                </div>
+
+                <hr>
+
+                <div class="d-flex justify-content-between">
+                    <span class="fw-bold">Total</span>
+                    <span class="fw-bold text-primary fs-5">
+                        Rp{{ pesanan.total_biaya|floatformat:0 }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Registrasi Pelanggan | Laundry Management
+{% endblock %}
+
+{% block guest_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <h2 class="fw-bold">
+                        Registrasi Pelanggan
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Akun harus diverifikasi administrator
+                        sebelum dapat digunakan untuk login.
+                    </p>
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label
+                                class="form-label"
+                                for="{{ form.first_name.id_for_label }}"
+                            >
+                                Nama depan
+                            </label>
+
+                            {{ form.first_name }}
+
+                            {% for error in form.first_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label
+                                class="form-label"
+                                for="{{ form.last_name.id_for_label }}"
+                            >
+                                Nama belakang
+                            </label>
+
+                            {{ form.last_name }}
+
+                            {% for error in form.last_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="{{ form.username.id_for_label }}"
+                        >
+                            Username
+                        </label>
+
+                        {{ form.username }}
+
+                        {% if form.username.help_text %}
+                            <div class="form-text">
+                                {{ form.username.help_text }}
+                            </div>
+                        {% endif %}
+
+                        {% for error in form.username.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label
+                                class="form-label"
+                                for="{{ form.nomor_hp.id_for_label }}"
+                            >
+                                Nomor HP
+                            </label>
+
+                            {{ form.nomor_hp }}
+
+                            {% for error in form.nomor_hp.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label
+                                class="form-label"
+                                for="{{ form.email.id_for_label }}"
+                            >
+                                Email
+                            </label>
+
+                            {{ form.email }}
+
+                            {% for error in form.email.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label
+                            class="form-label"
+                            for="{{ form.alamat.id_for_label }}"
+                        >
+                            Alamat
+                        </label>
+
+                        {{ form.alamat }}
+
+                        {% for error in form.alamat.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label
+                                class="form-label"
+                                for="{{ form.password1.id_for_label }}"
+                            >
+                                Password
+                            </label>
+
+                            {{ form.password1 }}
+
+                            {% for error in form.password1.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label
+                                class="form-label"
+                                for="{{ form.password2.id_for_label }}"
+                            >
+                                Konfirmasi password
+                            </label>
+
+                            {{ form.password2 }}
+
+                            {% for error in form.password2.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Daftar
+                    </button>
+
+                    <a
+                        href="{% url 'login' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Kembali ke login
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

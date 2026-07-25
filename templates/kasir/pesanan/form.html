@@ -1,0 +1,736 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Buat Pesanan Kasir
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+    }
+
+    .form-card .card-header {
+        padding: 1rem 1.25rem;
+        background: #ffffff;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .detail-row {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        background: #f8fafc;
+    }
+
+    .detail-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-label {
+        font-weight: 600;
+    }
+
+    .required-label::after {
+        content: " *";
+        color: #dc3545;
+    }
+
+    .empty-form-template {
+        display: none;
+    }
+
+    .sticky-summary {
+        position: sticky;
+        top: 90px;
+    }
+
+    .summary-box {
+        padding: 1rem;
+        border-radius: 12px;
+        background: #f8fafc;
+    }
+
+    .form-error-list {
+        padding-left: 1.25rem;
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <a
+            href="{% url 'kasir:pesanan_list' %}"
+            class="text-decoration-none"
+        >
+            <i class="bi bi-arrow-left me-1"></i>
+            Kembali ke daftar pesanan
+        </a>
+
+        <h2 class="fw-bold mt-2 mb-1">
+            Buat Pesanan
+        </h2>
+
+        <p class="text-muted mb-0">
+            Masukkan data pelanggan dan detail layanan laundry.
+        </p>
+    </div>
+</div>
+
+<form method="post" id="pesananForm">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            <ul class="form-error-list">
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if formset.non_form_errors %}
+        <div class="alert alert-danger">
+            <ul class="form-error-list">
+                {% for error in formset.non_form_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="card form-card mb-4">
+                <div class="card-header">
+                    <strong>Data Pelanggan dan Transaksi</strong>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.pelanggan.id_for_label }}"
+                                class="form-label required-label"
+                            >
+                                Pelanggan
+                            </label>
+
+                            {{ form.pelanggan }}
+
+                            {% for error in form.pelanggan.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.metode_pembayaran.id_for_label }}"
+                                class="form-label required-label"
+                            >
+                                Metode pembayaran
+                            </label>
+
+                            {{ form.metode_pembayaran }}
+
+                            {% for error in form.metode_pembayaran.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.jenis_pengantaran.id_for_label }}"
+                                class="form-label required-label"
+                            >
+                                Metode penerimaan
+                            </label>
+
+                            {{ form.jenis_pengantaran }}
+
+                            {% for error in form.jenis_pengantaran.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.promo.id_for_label }}"
+                                class="form-label"
+                            >
+                                Promo
+                            </label>
+
+                            {{ form.promo }}
+
+                            {% for error in form.promo.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="card form-card mb-4"
+                id="antarJemputSection"
+            >
+                <div class="card-header">
+                    <strong>Informasi Antar-Jemput</strong>
+
+                    <small class="text-muted d-block">
+                        Diisi jika pelanggan memilih layanan antar atau jemput.
+                    </small>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.area_layanan.id_for_label }}"
+                                class="form-label"
+                            >
+                                Area layanan
+                            </label>
+
+                            {{ form.area_layanan }}
+
+                            {% for error in form.area_layanan.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.tanggal_penjemputan.id_for_label }}"
+                                class="form-label"
+                            >
+                                Tanggal penjemputan
+                            </label>
+
+                            {{ form.tanggal_penjemputan }}
+
+                            {% for error in form.tanggal_penjemputan.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div
+                            class="col-md-6"
+                            id="alamatPenjemputanGroup"
+                        >
+                            <label
+                                for="{{ form.alamat_penjemputan.id_for_label }}"
+                                class="form-label"
+                            >
+                                Alamat penjemputan
+                            </label>
+
+                            {{ form.alamat_penjemputan }}
+
+                            {% for error in form.alamat_penjemputan.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div
+                            class="col-md-6"
+                            id="alamatPengantaranGroup"
+                        >
+                            <label
+                                for="{{ form.alamat_pengantaran.id_for_label }}"
+                                class="form-label"
+                            >
+                                Alamat pengantaran
+                            </label>
+
+                            {{ form.alamat_pengantaran }}
+
+                            {% for error in form.alamat_pengantaran.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.tanggal_pengambilan.id_for_label }}"
+                                class="form-label"
+                            >
+                                Tanggal pengambilan
+                            </label>
+
+                            {{ form.tanggal_pengambilan }}
+
+                            {% for error in form.tanggal_pengambilan.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card form-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>Detail Layanan</strong>
+
+                        <small class="text-muted d-block">
+                            Minimal satu layanan harus diisi.
+                        </small>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-primary"
+                        id="addDetailButton"
+                    >
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Tambah Layanan
+                    </button>
+                </div>
+
+                <div class="card-body">
+                    {{ formset.management_form }}
+
+                    <div id="detailForms">
+                        {% for detail_form in formset %}
+                            <div
+                                class="detail-row"
+                                data-form-index="{{ forloop.counter0 }}"
+                            >
+                                {% for hidden in detail_form.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <strong>
+                                        Layanan
+                                        <span class="detail-number">
+                                            {{ forloop.counter }}
+                                        </span>
+                                    </strong>
+
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-danger remove-detail-button"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label required-label">
+                                            Jenis layanan
+                                        </label>
+
+                                        {{ detail_form.layanan }}
+
+                                        {% for error in detail_form.layanan.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label class="form-label required-label">
+                                            Nama/detail barang
+                                        </label>
+
+                                        {{ detail_form.nama_barang }}
+
+                                        {% for error in detail_form.nama_barang.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label required-label">
+                                            Berat/jumlah
+                                        </label>
+
+                                        {{ detail_form.jumlah }}
+
+                                        {% for error in detail_form.jumlah.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+
+                                    <div class="col-md-8">
+                                        <label class="form-label">
+                                            Catatan
+                                        </label>
+
+                                        {{ detail_form.catatan }}
+
+                                        {% for error in detail_form.catatan.errors %}
+                                            <div class="text-danger small mt-1">
+                                                {{ error }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="d-none">
+                                    {{ detail_form.DELETE }}
+                                </div>
+
+                                {% if detail_form.non_field_errors %}
+                                    <div class="alert alert-danger mt-3 mb-0">
+                                        {{ detail_form.non_field_errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div
+                        id="emptyDetailForm"
+                        class="empty-form-template"
+                    >
+                        <div
+                            class="detail-row"
+                            data-form-index="__prefix__"
+                        >
+                            {% for hidden in formset.empty_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <strong>
+                                    Layanan
+                                    <span class="detail-number"></span>
+                                </strong>
+
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-outline-danger remove-detail-button"
+                                >
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label required-label">
+                                        Jenis layanan
+                                    </label>
+
+                                    {{ formset.empty_form.layanan }}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label required-label">
+                                        Nama/detail barang
+                                    </label>
+
+                                    {{ formset.empty_form.nama_barang }}
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label required-label">
+                                        Berat/jumlah
+                                    </label>
+
+                                    {{ formset.empty_form.jumlah }}
+                                </div>
+
+                                <div class="col-md-8">
+                                    <label class="form-label">
+                                        Catatan
+                                    </label>
+
+                                    {{ formset.empty_form.catatan }}
+                                </div>
+                            </div>
+
+                            <div class="d-none">
+                                {{ formset.empty_form.DELETE }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card form-card">
+                <div class="card-header">
+                    <strong>Catatan</strong>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.catatan_pelanggan.id_for_label }}"
+                                class="form-label"
+                            >
+                                Catatan pelanggan
+                            </label>
+
+                            {{ form.catatan_pelanggan }}
+                        </div>
+
+                        <div class="col-md-6">
+                            <label
+                                for="{{ form.catatan_kasir.id_for_label }}"
+                                class="form-label"
+                            >
+                                Catatan kasir
+                            </label>
+
+                            {{ form.catatan_kasir }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="sticky-summary">
+                <div class="card form-card">
+                    <div class="card-header">
+                        <strong>Ringkasan Pesanan</strong>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="summary-box mb-3">
+                            <p class="text-muted mb-2">
+                                Total biaya akan dihitung otomatis menggunakan:
+                            </p>
+
+                            <ul class="mb-0">
+                                <li>Tarif aktif setiap layanan</li>
+                                <li>Berat atau jumlah barang</li>
+                                <li>Promo yang dipilih</li>
+                                <li>Biaya antar-jemput</li>
+                            </ul>
+                        </div>
+
+                        <div class="alert alert-info">
+                            Harga tidak diinput manual agar tarif transaksi tetap sesuai data master.
+                        </div>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100 mb-2"
+                        >
+                            <i class="bi bi-check-circle me-1"></i>
+                            Simpan Pesanan
+                        </button>
+
+                        <a
+                            href="{% url 'kasir:pesanan_list' %}"
+                            class="btn btn-outline-secondary w-100"
+                        >
+                            Batal
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const detailContainer =
+            document.getElementById("detailForms");
+
+        const addDetailButton =
+            document.getElementById("addDetailButton");
+
+        const totalFormsInput =
+            document.getElementById("id_detail-TOTAL_FORMS");
+
+        const emptyTemplate =
+            document.getElementById("emptyDetailForm");
+
+        const jenisPengantaran =
+            document.getElementById("id_jenis_pengantaran");
+
+        const antarJemputSection =
+            document.getElementById("antarJemputSection");
+
+        const alamatPenjemputanGroup =
+            document.getElementById("alamatPenjemputanGroup");
+
+        const alamatPengantaranGroup =
+            document.getElementById("alamatPengantaranGroup");
+
+        function updateDetailNumbers() {
+            const detailRows =
+                detailContainer.querySelectorAll(".detail-row");
+
+            let visibleNumber = 1;
+
+            detailRows.forEach(function (row) {
+                const deleteInput =
+                    row.querySelector(
+                        'input[name$="-DELETE"]'
+                    );
+
+                if (
+                    deleteInput &&
+                    deleteInput.checked
+                ) {
+                    row.style.display = "none";
+                    return;
+                }
+
+                row.style.display = "";
+
+                const numberElement =
+                    row.querySelector(".detail-number");
+
+                if (numberElement) {
+                    numberElement.textContent =
+                        visibleNumber;
+                }
+
+                visibleNumber += 1;
+            });
+        }
+
+        function bindRemoveButtons() {
+            const removeButtons =
+                detailContainer.querySelectorAll(
+                    ".remove-detail-button"
+                );
+
+            removeButtons.forEach(function (button) {
+                if (button.dataset.bound === "true") {
+                    return;
+                }
+
+                button.dataset.bound = "true";
+
+                button.addEventListener(
+                    "click",
+                    function () {
+                        const row =
+                            button.closest(".detail-row");
+
+                        const deleteInput =
+                            row.querySelector(
+                                'input[name$="-DELETE"]'
+                            );
+
+                        const idInput =
+                            row.querySelector(
+                                'input[name$="-id"]'
+                            );
+
+                        if (
+                            idInput &&
+                            idInput.value
+                        ) {
+                            deleteInput.checked = true;
+                            row.style.display = "none";
+                        } else {
+                            row.remove();
+                        }
+
+                        updateDetailNumbers();
+                    }
+                );
+            });
+        }
+
+        addDetailButton.addEventListener(
+            "click",
+            function () {
+                const formIndex =
+                    parseInt(
+                        totalFormsInput.value,
+                        10
+                    );
+
+                const templateHtml =
+                    emptyTemplate.innerHTML.replace(
+                        /__prefix__/g,
+                        formIndex
+                    );
+
+                detailContainer.insertAdjacentHTML(
+                    "beforeend",
+                    templateHtml
+                );
+
+                totalFormsInput.value =
+                    formIndex + 1;
+
+                bindRemoveButtons();
+                updateDetailNumbers();
+            }
+        );
+
+        function updateAntarJemputVisibility() {
+            const value = jenisPengantaran.value;
+
+            if (value === "datang_sendiri") {
+                antarJemputSection.style.display =
+                    "none";
+                return;
+            }
+
+            antarJemputSection.style.display = "";
+
+            alamatPenjemputanGroup.style.display =
+                (
+                    value === "jemput" ||
+                    value === "antar_jemput"
+                )
+                    ? ""
+                    : "none";
+
+            alamatPengantaranGroup.style.display =
+                (
+                    value === "antar" ||
+                    value === "antar_jemput"
+                )
+                    ? ""
+                    : "none";
+        }
+
+        jenisPengantaran.addEventListener(
+            "change",
+            updateAntarJemputVisibility
+        );
+
+        bindRemoveButtons();
+        updateDetailNumbers();
+        updateAntarJemputVisibility();
+    });
+</script>
+{% endblock %}
