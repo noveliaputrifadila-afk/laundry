@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard Pelanggan
+{% endblock %}
+
+{% block content %}
+
+<div class="mb-4">
+    <h2 class="fw-bold mb-1">
+        Dashboard Pelanggan
+    </h2>
+
+    <p class="text-muted mb-0">
+        Selamat datang,
+        {{ request.user.get_full_name|default:request.user.username }}.
+    </p>
+</div>
+
+<div class="row g-3 mb-4">
+
+    <div class="col-md-6 col-xl-3">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted mb-2">
+                    Total Pesanan
+                </div>
+
+                <div class="fs-3 fw-bold">
+                    {{ pesanan_saya.count }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <strong>Pesanan Terbaru</strong>
+
+        <a
+            href="{% url 'pelanggan:pesanan_tambah' %}"
+            class="btn btn-primary btn-sm"
+        >
+            <i class="bi bi-plus-circle me-1"></i>
+            Buat Pesanan
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Kode Pesanan</th>
+                    <th>Tanggal</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th class="text-center">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in pesanan_saya|slice:":5" %}
+                    <tr>
+                        <td class="fw-semibold">
+                            {{ pesanan.kode_pesanan }}
+                        </td>
+
+                        <td>
+                            {{ pesanan.created_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+                            <span class="badge bg-info-subtle text-info">
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </td>
+
+                        <td class="fw-semibold">
+                            Rp{{ pesanan.total_biaya|floatformat:0 }}
+                        </td>
+
+                        <td class="text-center">
+                            <a
+                                href="#"
+                                class="btn btn-sm btn-outline-primary"
+                            >
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="5"
+                            class="text-center text-muted py-5"
+                        >
+                            <i class="bi bi-bag-x fs-1 d-block mb-2"></i>
+                            Belum ada pesanan.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

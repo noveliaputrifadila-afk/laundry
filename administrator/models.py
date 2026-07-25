@@ -129,7 +129,7 @@ class User(AbstractUser):
                 "is_active",
                 "verified_at",
                 "verified_by",
-                "updated_at",
+                
             ]
         )
 

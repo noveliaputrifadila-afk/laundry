@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}
+Detail Kendala
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .detail-card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 4px 18px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+    }
+
+    .detail-label {
+        color: #64748b;
+        font-size: 0.82rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+        color: #172033;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.55rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
+    .description-box {
+        border-radius: 12px;
+        background: #f8fafc;
+        padding: 1rem;
+        color: #334155;
+        white-space: pre-line;
+    }
+
+    .response-box {
+        border: 1px solid #bae6fd;
+        border-radius: 12px;
+        background: #f0f9ff;
+        padding: 1rem;
+        color: #334155;
+        white-space: pre-line;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Detail Kendala
+        </h2>
+
+        <p class="text-muted mb-0">
+            {{ kendala.pesanan.kode_pesanan }}
+        </p>
+    </div>
+
+    <a
+        href="{% url 'petugas:kendala_list' %}"
+        class="btn btn-outline-secondary"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+<div class="row g-4">
+
+    <div class="col-xl-8">
+
+        <div class="card detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Informasi Kendala
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="detail-label">
+                            Judul Kendala
+                        </div>
+
+                        <div class="detail-value">
+                            {{ kendala.judul }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">
+                            Status
+                        </div>
+
+                        <div>
+                            {% if kendala.status == "dilaporkan" %}
+                                <span class="status-badge bg-warning-subtle text-warning">
+                                    <i class="bi bi-clock-history me-1"></i>
+                                    {{ kendala.get_status_display }}
+                                </span>
+
+                            {% elif kendala.status == "ditindaklanjuti" %}
+                                <span class="status-badge bg-info-subtle text-info">
+                                    <i class="bi bi-tools me-1"></i>
+                                    {{ kendala.get_status_display }}
+                                </span>
+
+                            {% elif kendala.status == "selesai" %}
+                                <span class="status-badge bg-success-subtle text-success">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    {{ kendala.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">
+                            Tanggal Dilaporkan
+                        </div>
+
+                        <div class="detail-value">
+                            {{ kendala.created_at|date:"d F Y H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="detail-label">
+                            Dilaporkan Oleh
+                        </div>
+
+                        <div class="detail-value">
+                            {{ kendala.dilaporkan_oleh.get_full_name|default:kendala.dilaporkan_oleh.username }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="detail-label mb-2">
+                    Deskripsi Kendala
+                </div>
+
+                <div class="description-box">
+                    {{ kendala.deskripsi }}
+                </div>
+
+            </div>
+        </div>
+
+        <div class="card detail-card">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Tanggapan
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                {% if kendala.tanggapan_kasir %}
+                    <div class="response-box mb-3">
+                        {{ kendala.tanggapan_kasir }}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="detail-label">
+                                Ditangani Oleh
+                            </div>
+
+                            <div class="detail-value">
+                                {% if kendala.ditangani_oleh %}
+                                    {{ kendala.ditangani_oleh.get_full_name|default:kendala.ditangani_oleh.username }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="detail-label">
+                                Terakhir Diperbarui
+                            </div>
+
+                            <div class="detail-value">
+                                {{ kendala.updated_at|date:"d F Y H:i" }}
+                            </div>
+                        </div>
+                    </div>
+
+                {% else %}
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-clock-history me-1"></i>
+                        Kendala ini belum mendapatkan tanggapan dari admin atau kasir.
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="col-xl-4">
+
+        <div class="card detail-card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="fw-bold mb-0">
+                    Informasi Pesanan
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-3">
+                    <div class="detail-label">
+                        Kode Pesanan
+                    </div>
+
+                    <div class="detail-value">
+                        {{ kendala.pesanan.kode_pesanan }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label">
+                        Status Pesanan
+                    </div>
+
+                    <div class="detail-value">
+                        {{ kendala.pesanan.get_status_display }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="detail-label">
+                        Pelanggan
+                    </div>
+
+                    <div class="detail-value">
+                        {{ kendala.pesanan.pelanggan.get_full_name|default:kendala.pesanan.pelanggan.username }}
+                    </div>
+                </div>
+
+                <div>
+                    <div class="detail-label">
+                        Tanggal Pesanan
+                    </div>
+
+                    <div class="detail-value">
+                        {{ kendala.pesanan.created_at|date:"d F Y H:i" }}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card-footer bg-white">
+                <a
+                    href="{% url 'petugas:tugas_detail' kendala.pesanan.pk %}"
+                    class="btn btn-outline-primary w-100"
+                >
+                    <i class="bi bi-eye me-1"></i>
+                    Lihat Detail Tugas
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

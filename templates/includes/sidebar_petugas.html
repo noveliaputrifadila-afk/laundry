@@ -59,8 +59,8 @@
             </a>
 
             <a
-                href="{% url 'petugas:tugas_list' %}?status=dicuci"
-                class="nav-link"
+                href="{% url 'petugas:tugas_list' %}?mode=proses"
+                class="nav-link {% if url_name == 'tugas_list' and request.GET.mode == 'proses' %}active{% endif %}"
             >
                 <i class="bi bi-arrow-repeat"></i>
                 <span>Proses Laundry</span>
@@ -71,13 +71,20 @@
             <div class="sidebar-menu-title">
                 Kendala
             </div>
+            
 
-            <a href="#" class="nav-link">
+            <a 
+                href="{% url 'petugas:kendala_list' %}"
+                class="nav-link {% if url_name == 'kendala_list' or url_name == 'kendala_detail' or url_name == 'kendala_tambah' %}active{% endif %}"
+            >
                 <i class="bi bi-exclamation-triangle"></i>
                 <span>Laporkan Kendala</span>
             </a>
 
-            <a href="#" class="nav-link">
+            <a 
+                href="{% url 'petugas:kendala_list' %}?mode=riwayat"
+                class="nav-link {% if url_name == 'kendala_list' and request.GET.mode == 'riwayat' %}active{% endif %}"
+            >
                 <i class="bi bi-clock-history"></i>
                 <span>Riwayat Kendala</span>
             </a>
@@ -88,7 +95,10 @@
                 Riwayat
             </div>
 
-            <a href="#" class="nav-link">
+            <a
+                href="{% url 'petugas:tugas_list' %}?mode=riwayat"
+                class="nav-link {% if url_name == 'tugas_list' and request.GET.mode == 'riwayat' %}active{% endif %}"
+            >
                 <i class="bi bi-journal-check"></i>
                 <span>Riwayat Pekerjaan</span>
             </a>

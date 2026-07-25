@@ -54,11 +54,11 @@ Daftar Tugas Laundry
 
 <div class="mb-4">
     <h2 class="fw-bold mb-1">
-        Daftar Tugas Laundry
+        {{ judul_halaman }}
     </h2>
 
     <p class="text-muted mb-0">
-        Kelola seluruh pesanan yang ditugaskan kepada Anda.
+        {{ deskripsi_halaman }}
     </p>
 </div>
 
@@ -151,6 +151,17 @@ Daftar Tugas Laundry
 
     <div class="card-body">
         <form method="get">
+
+        {% if mode %}
+            <input
+                type="hidden"
+                name="mode"
+                value="{{ mode }}"
+            >
+        {% endif %}
+
+        <div class="row g-3">
+
             <div class="row g-3">
                 <div class="col-lg-6">
                     <label class="form-label">
@@ -284,13 +295,27 @@ Daftar Tugas Laundry
                         </td>
 
                         <td class="text-center">
-                            <a
-                                href="{% url 'petugas:tugas_detail' pesanan.pk %}"
-                                class="btn btn-sm btn-outline-primary"
-                                title="Lihat detail"
-                            >
-                                <i class="bi bi-eye"></i>
-                            </a>
+                            <div class="d-flex justify-content-center gap-2">
+
+                                <a
+                                    href="{% url 'petugas:tugas_detail' pesanan.pk %}"
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="Lihat Detail"
+                                >
+                                    <i class="bi bi-eye"></i>
+                                </a>
+
+                                {% if pesanan.status != "selesai" and pesanan.status != "dibatalkan" and pesanan.status != "ditolak" %}
+                                    <a
+                                        href="{% url 'petugas:kendala_tambah' pesanan.pk %}"
+                                        class="btn btn-sm btn-outline-danger"
+                                        title="Laporkan Kendala"
+                                    >
+                                        <i class="bi bi-exclamation-triangle"></i>
+                                    </a>
+                                {% endif %}
+
+                            </div>
                         </td>
                     </tr>
 
@@ -320,7 +345,7 @@ Daftar Tugas Laundry
                 <div class="d-flex gap-2">
                     {% if page_obj.has_previous %}
                         <a
-                            href="?page={{ page_obj.previous_page_number }}&q={{ keyword|urlencode }}&status={{ status_terpilih }}"
+                            href="?page={{ page_obj.previous_page_number }}&q={{ keyword|urlencode }}&status={{ status_terpilih }}&mode={{ mode }}"
                             class="btn btn-sm btn-outline-secondary"
                         >
                             Sebelumnya
@@ -329,7 +354,7 @@ Daftar Tugas Laundry
 
                     {% if page_obj.has_next %}
                         <a
-                            href="?page={{ page_obj.next_page_number }}&q={{ keyword|urlencode }}&status={{ status_terpilih }}"
+                            href="?page={{ page_obj.next_page_number }}&q={{ keyword|urlencode }}&status={{ status_terpilih }}&mode={{ mode }}"
                             class="btn btn-sm btn-outline-secondary"
                         >
                             Selanjutnya
