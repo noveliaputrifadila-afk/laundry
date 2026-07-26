@@ -505,6 +505,18 @@ body {
     font-size: 0.85rem;
 }
 
+.sidebar-menu-title {
+    margin: 18px 12px 8px;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.sidebar-group:first-child .sidebar-menu-title {
+    margin-top: 0;
+}
 
 @media (max-width: 575.98px) {
     .app-footer {

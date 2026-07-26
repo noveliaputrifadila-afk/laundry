@@ -156,6 +156,22 @@
             </span>
         </a>
 
+        <div class="sidebar-group">
+            <div class="sidebar-menu-title">
+                Akun
+            </div>
+
+            <a
+                href="{% url 'accounts:profile' %}"
+                class="nav-link
+                {% if request.resolver_match.namespace == 'accounts' %}
+                    active
+                {% endif %}"
+            >
+                <i class="bi bi-person-circle"></i>
+                <span>Profil Saya</span>
+            </a>
+        </div>
     </nav>
 </aside>
 

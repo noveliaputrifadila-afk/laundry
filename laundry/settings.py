@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "kasir",
     "pelanggan",
     "petugaslaundry",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [

@@ -58,6 +58,10 @@ urlpatterns = [
         "pelanggan/",
         include("pelanggan.urls"),
     ),
+    path(
+        "profil/",
+        include("accounts.urls"),
+    ),
 
     path(
         "password-reset/",
