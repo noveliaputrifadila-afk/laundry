@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}
+Tracking {{ pesanan.kode_pesanan }}
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+
+                    <div class="d-flex flex-column flex-md-row
+                                justify-content-between align-items-md-center
+                                gap-3">
+
+                        <div>
+                            <p class="text-muted mb-1">
+                                Tracking Pesanan
+                            </p>
+
+                            <h3 class="fw-bold mb-1">
+                                {{ pesanan.kode_pesanan }}
+                            </h3>
+
+                            <p class="text-muted mb-0">
+                                Dibuat pada
+                                {{ pesanan.created_at|date:"d F Y, H:i" }}
+                            </p>
+                        </div>
+
+                        <div class="text-md-end">
+                            <span class="badge rounded-pill
+                                {% if pesanan.status == 'selesai' %}
+                                    text-bg-success
+                                {% elif pesanan.status == 'dibatalkan' or pesanan.status == 'ditolak' %}
+                                    text-bg-danger
+                                {% elif pesanan.status == 'menunggu_konfirmasi' %}
+                                    text-bg-warning
+                                {% else %}
+                                    text-bg-primary
+                                {% endif %}
+                                px-3 py-2">
+
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            {% if pesanan.status == "ditolak" %}
+                <div class="alert alert-danger">
+                    <strong>Pesanan ditolak.</strong>
+
+                    {% if pesanan.alasan_penolakan %}
+                        <div class="mt-2">
+                            {{ pesanan.alasan_penolakan }}
+                        </div>
+                    {% endif %}
+                </div>
+
+            {% elif pesanan.status == "dibatalkan" %}
+                <div class="alert alert-danger">
+                    Pesanan ini telah dibatalkan.
+                </div>
+            {% endif %}
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="fw-bold mb-0">
+                        Informasi Pesanan
+                    </h5>
+                </div>
+
+                <div class="card-body px-4 pb-4">
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">
+                                Pelanggan
+                            </small>
+
+                            <span class="fw-semibold">
+                                {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+                            </span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">
+                                Metode penerimaan
+                            </small>
+
+                            <span class="fw-semibold">
+                                {{ pesanan.get_jenis_pengantaran_display }}
+                            </span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">
+                                Petugas Laundry
+                            </small>
+
+                            <span class="fw-semibold">
+                                {% if pesanan.petugas_laundry %}
+                                    {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                                {% else %}
+                                    Belum ditugaskan
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <small class="text-muted d-block">
+                                Estimasi selesai
+                            </small>
+
+                            <span class="fw-semibold">
+                                {% if pesanan.estimasi_selesai %}
+                                    {{ pesanan.estimasi_selesai|date:"d F Y, H:i" }}
+                                {% else %}
+                                    Belum ditentukan
+                                {% endif %}
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            {% if pesanan.status != "ditolak" and pesanan.status != "dibatalkan" %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 pt-4 px-4">
+                        <h5 class="fw-bold mb-0">
+                            Progres Laundry
+                        </h5>
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        <div class="tracking-list">
+                            {% for tahap in tahapan %}
+                                <div class="d-flex gap-3 mb-4">
+
+                                    <div>
+                                        {% if tahap.aktif %}
+                                            <div class="tracking-icon bg-primary text-white">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </div>
+                                        {% elif tahap.selesai %}
+                                            <div class="tracking-icon bg-success text-white">
+                                                <i class="bi bi-check-lg"></i>
+                                            </div>
+                                        {% else %}
+                                            <div class="tracking-icon bg-light text-muted border">
+                                                <i class="bi bi-circle"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="pt-1">
+                                        <div class="
+                                            {% if tahap.aktif %}
+                                                fw-bold text-primary
+                                            {% elif tahap.selesai %}
+                                                fw-semibold text-success
+                                            {% else %}
+                                                text-muted
+                                            {% endif %}
+                                        ">
+                                            {{ tahap.nama }}
+                                        </div>
+
+                                        {% if tahap.aktif %}
+                                            <small class="text-muted">
+                                                Proses saat ini
+                                            </small>
+                                        {% elif tahap.selesai %}
+                                            <small class="text-muted">
+                                                Sudah dilewati
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">
+                                                Menunggu proses
+                                            </small>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-0 pt-4 px-4">
+                    <h5 class="fw-bold mb-0">
+                        Riwayat Status
+                    </h5>
+                </div>
+
+                <div class="card-body px-4 pb-4">
+
+                    {% for item in riwayat %}
+                        <div class="border-start border-3 ps-3 pb-4">
+
+                            <div class="fw-semibold">
+                                {{ item.get_status_baru_display }}
+                            </div>
+
+                            <small class="text-muted d-block">
+                                {{ item.created_at|date:"d F Y, H:i" }}
+                            </small>
+
+                            {% if item.catatan %}
+                                <p class="mb-0 mt-2">
+                                    {{ item.catatan }}
+                                </p>
+                            {% endif %}
+
+                        </div>
+                    {% empty %}
+                        <div class="text-center text-muted py-4">
+                            Belum ada riwayat perubahan status.
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .tracking-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}

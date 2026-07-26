@@ -25,6 +25,14 @@
             Edit
         </a>
 
+         <a
+            href="{% url 'administrator:invoice_pdf' invoice.pk %}"
+            target="_blank"
+            class="btn btn-danger"
+        >
+            <i class="bi bi-file-earmark-pdf me-1"></i>
+            Cetak PDF
+        </a>
         <a
             href="{% url 'administrator:invoice_list' %}"
             class="btn btn-outline-secondary"

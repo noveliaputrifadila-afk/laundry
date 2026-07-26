@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3 class="mb-4">
+    Monitoring Laundry
+</h3>
+
+<div class="card shadow-sm">
+
+    <div class="card-body">
+
+        <h5>{{ pesanan.kode_pesanan }}</h5>
+
+        <p>
+            Pelanggan :
+            {{ pesanan.pelanggan.get_full_name|default:pesanan.pelanggan.username }}
+        </p>
+
+        <hr>
+
+        {% for item in riwayat %}
+
+            <div class="d-flex mb-4">
+
+                <div class="me-3">
+                    <span class="badge bg-success rounded-circle p-3">
+                        ✓
+                    </span>
+                </div>
+
+                <div>
+
+                    <strong>
+                        {{ item.get_status_baru_display }}
+                    </strong>
+
+                    <br>
+
+                    <small class="text-muted">
+
+                        {{ item.created_at|date:"d M Y H:i" }}
+
+                    </small>
+
+                    {% if item.catatan %}
+
+                        <p class="mb-0 mt-2">
+                            {{ item.catatan }}
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="alert alert-warning">
+
+                Belum ada riwayat status.
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

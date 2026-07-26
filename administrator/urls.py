@@ -79,6 +79,7 @@ from .views_invoice import (
     invoice_create,
     invoice_detail,
     invoice_list,
+    invoice_pdf,
     invoice_terbitkan,
     invoice_update,
 )
@@ -135,6 +136,18 @@ urlpatterns = [
         "",
         dashboard,
         name="dashboard",
+    ),
+
+    path(
+        "tracking/<str:kode_pesanan>/",
+        views.tracking_pesanan,
+        name="tracking_pesanan",
+    ),
+
+    path(
+        "pesanan/<str:kode_pesanan>/qr-code/",
+        views.qr_code_pesanan,
+        name="qr_code_pesanan",
     ),
 
     
@@ -412,6 +425,11 @@ urlpatterns = [
         name="invoice_detail",
     ),
     path(
+        "pesanan/<str:kode_pesanan>/invoice/",
+        views.invoice_pdf,
+        name="invoice_pdf",
+    ),
+    path(
         "invoice/<int:pk>/edit/",
         invoice_update,
         name="invoice_update",
@@ -574,9 +592,14 @@ urlpatterns = [
         name="riwayat_status_detail",
     ),
 
-path(
-    "sistem/log-aktivitas/",
-    views.log_aktivitas_list,
-    name="log_aktivitas_list",
-),
+    path(
+        "sistem/log-aktivitas/",
+        views.log_aktivitas_list,
+        name="log_aktivitas_list",
+    ),
+    path(
+        "monitoring/<int:pk>/",
+        views.monitoring_detail,
+        name="monitoring_detail",
+    ),
 ]

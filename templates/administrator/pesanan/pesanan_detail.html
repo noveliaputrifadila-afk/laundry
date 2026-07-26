@@ -36,6 +36,15 @@
         {% endif %}
 
         <a
+            href="{% url 'administrator:invoice_pdf' pesanan.kode_pesanan %}"
+            target="_blank"
+            class="btn btn-danger"
+        >
+            <i class="bi bi-file-earmark-pdf me-1"></i>
+            Cetak Invoice PDF
+        </a>
+        
+        <a
             href="{% url 'administrator:pesanan_list' %}"
             class="btn btn-outline-secondary"
         >
@@ -619,6 +628,39 @@
                         Rp{{ pesanan.total_biaya|floatformat:0 }}
                     </strong>
                 </div>
+
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">
+                            QR Code Tracking
+                        </h5>
+                    </div>
+
+                    <div class="card-body text-center">
+
+                        <img
+                            src="{% url 'administrator:qr_code_pesanan' pesanan.kode_pesanan %}"
+                            alt="QR Code {{ pesanan.kode_pesanan }}"
+                            class="img-fluid"
+                            style="max-width: 220px;"
+                        >
+
+                        <p class="text-muted mt-3 mb-2">
+                            Scan QR Code untuk melihat progres laundry.
+                        </p>
+
+                        <a
+                            href="{% url 'administrator:tracking_pesanan' pesanan.kode_pesanan %}"
+                            target="_blank"
+                            class="btn btn-outline-primary"
+                        >
+                            <i class="bi bi-box-arrow-up-right me-1"></i>
+                            Buka Tracking
+                        </a>
+
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
