@@ -1290,3 +1290,60 @@ class LogAktivitas(models.Model):
         )
 
         return f"{nama_pengguna} - {self.aktivitas}"
+
+class Notifikasi(models.Model):
+    class JenisNotifikasi(models.TextChoices):
+        INFO = "info", "Informasi"
+        PESANAN = "pesanan", "Pesanan"
+        PEMBAYARAN = "pembayaran", "Pembayaran"
+        STATUS = "status", "Perubahan Status"
+        VERIFIKASI = "verifikasi", "Verifikasi"
+        KENDALA = "kendala", "Kendala"
+        PENUGASAN = "penugasan", "Penugasan"
+
+    penerima = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="notifikasi",
+        verbose_name="Penerima",
+    )
+
+    judul = models.CharField(
+        max_length=150,
+        verbose_name="Judul",
+    )
+
+    pesan = models.TextField(
+        verbose_name="Pesan",
+    )
+
+    jenis = models.CharField(
+        max_length=20,
+        choices=JenisNotifikasi.choices,
+        default=JenisNotifikasi.INFO,
+        verbose_name="Jenis Notifikasi",
+    )
+
+    link = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Tautan",
+    )
+
+    is_read = models.BooleanField(
+        default=False,
+        verbose_name="Sudah Dibaca",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Dibuat Pada",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Notifikasi"
+        verbose_name_plural = "Notifikasi"
+
+    def __str__(self):
+        return f"{self.penerima.username} - {self.judul}"

@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .decorators import administrator_required
 from .forms import FilterLogAktivitasForm
@@ -18,6 +18,7 @@ from .models import (
     RiwayatStatus,
     Tarif,
     User,
+    Notifikasi,
 )
 
 
@@ -286,4 +287,111 @@ def log_aktivitas_list(request):
         request,
         "administrator/log_aktivitas/list.html",
         context,
+    )
+
+@administrator_required
+def notifikasi_list(request):
+    """
+    Menampilkan seluruh notifikasi milik administrator
+    yang sedang login.
+    """
+
+    queryset = (
+        Notifikasi.objects
+        .filter(penerima=request.user)
+        .order_by("-created_at")
+    )
+
+    status = request.GET.get("status", "")
+    jenis = request.GET.get("jenis", "")
+    keyword = request.GET.get("keyword", "").strip()
+
+    if status == "belum_dibaca":
+        queryset = queryset.filter(is_read=False)
+
+    elif status == "sudah_dibaca":
+        queryset = queryset.filter(is_read=True)
+
+    if jenis:
+        queryset = queryset.filter(jenis=jenis)
+
+    if keyword:
+        queryset = queryset.filter(
+            Q(judul__icontains=keyword)
+            | Q(pesan__icontains=keyword)
+        )
+
+    jumlah_belum_dibaca = Notifikasi.objects.filter(
+        penerima=request.user,
+        is_read=False,
+    ).count()
+
+    paginator = Paginator(
+        queryset,
+        10,
+    )
+
+    page_obj = paginator.get_page(
+        request.GET.get("page")
+    )
+
+    context = {
+        "page_obj": page_obj,
+        "jumlah_belum_dibaca": jumlah_belum_dibaca,
+        "pilihan_jenis": Notifikasi.JenisNotifikasi.choices,
+        "status_filter": status,
+        "jenis_filter": jenis,
+        "keyword": keyword,
+    }
+
+    return render(
+        request,
+        "administrator/notifikasi/list.html",
+        context,
+    )
+
+
+@administrator_required
+def notifikasi_tandai_dibaca(request, pk):
+    """
+    Menandai satu notifikasi sebagai sudah dibaca.
+    """
+
+    notifikasi = get_object_or_404(
+        Notifikasi,
+        pk=pk,
+        penerima=request.user,
+    )
+
+    if request.method == "POST":
+        notifikasi.is_read = True
+        notifikasi.save(
+            update_fields=["is_read"]
+        )
+
+        if notifikasi.link:
+            return redirect(notifikasi.link)
+
+    return redirect(
+        "administrator:notifikasi_list"
+    )
+
+
+@administrator_required
+def notifikasi_tandai_semua_dibaca(request):
+    """
+    Menandai seluruh notifikasi administrator
+    sebagai sudah dibaca.
+    """
+
+    if request.method == "POST":
+        Notifikasi.objects.filter(
+            penerima=request.user,
+            is_read=False,
+        ).update(
+            is_read=True
+        )
+
+    return redirect(
+        "administrator:notifikasi_list"
     )

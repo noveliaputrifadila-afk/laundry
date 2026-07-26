@@ -23,8 +23,7 @@ def notifikasi_list(request):
         semua_notifikasi
         .select_related(
             "penerima",
-            "pesanan",
-            "pesanan__pelanggan",
+            
         )
         .order_by("-created_at")
     )
@@ -33,7 +32,7 @@ def notifikasi_list(request):
         notifikasi_queryset = notifikasi_queryset.filter(
             Q(judul__icontains=query)
             | Q(pesan__icontains=query)
-            | Q(pesanan__kode_pesanan__icontains=query)
+            
         )
 
     if jenis:
@@ -43,11 +42,11 @@ def notifikasi_list(request):
 
     if status == "belum_dibaca":
         notifikasi_queryset = notifikasi_queryset.filter(
-            sudah_dibaca=False,
+            is_read=False,
         )
-    elif status == "sudah_dibaca":
+    elif status == "is_read":
         notifikasi_queryset = notifikasi_queryset.filter(
-            sudah_dibaca=True,
+            is_read=True,
         )
 
     paginator = Paginator(notifikasi_queryset, 10)
@@ -63,10 +62,10 @@ def notifikasi_list(request):
         "jenis_choices": Notifikasi.JenisNotifikasi.choices,
         "total_notifikasi": semua_notifikasi.count(),
         "total_belum_dibaca": semua_notifikasi.filter(
-            sudah_dibaca=False,
+            is_read=False,
         ).count(),
-        "total_sudah_dibaca": semua_notifikasi.filter(
-            sudah_dibaca=True,
+        "total_is_read": semua_notifikasi.filter(
+            is_read=True,
         ).count(),
     }
 
@@ -82,14 +81,13 @@ def notifikasi_detail(request, pk):
     notifikasi = get_object_or_404(
         Notifikasi.objects.select_related(
             "penerima",
-            "pesanan",
-            "pesanan__pelanggan",
+            
         ),
         pk=pk,
         penerima=request.user,
     )
 
-    if not notifikasi.sudah_dibaca:
+    if not notifikasi.is_read:
         notifikasi.tandai_dibaca()
 
     return render(
@@ -134,12 +132,12 @@ def notifikasi_tandai_belum_dibaca(request, pk):
         penerima=request.user,
     )
 
-    notifikasi.sudah_dibaca = False
+    notifikasi.is_read = False
     notifikasi.dibaca_pada = None
 
     notifikasi.save(
         update_fields=[
-            "sudah_dibaca",
+            "is_read",
             "dibaca_pada",
             "updated_at",
         ]
@@ -158,9 +156,9 @@ def notifikasi_tandai_belum_dibaca(request, pk):
 def notifikasi_tandai_semua_dibaca(request):
     jumlah_diubah = Notifikasi.objects.filter(
         penerima=request.user,
-        sudah_dibaca=False,
+        is_read=False,
     ).update(
-        sudah_dibaca=True,
+        is_read=True,
         dibaca_pada=timezone.now(),
         updated_at=timezone.now(),
     )
@@ -203,7 +201,7 @@ def notifikasi_hapus(request, pk):
 def notifikasi_hapus_semua_dibaca(request):
     jumlah_dihapus, _ = Notifikasi.objects.filter(
         penerima=request.user,
-        sudah_dibaca=True,
+        is_read=True,
     ).delete()
 
     if jumlah_dihapus:

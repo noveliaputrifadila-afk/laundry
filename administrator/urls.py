@@ -126,6 +126,7 @@ from .views_riwayat_status import (
 )
 from . import views
 
+
 app_name = "administrator"
 
 

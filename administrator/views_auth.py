@@ -8,11 +8,16 @@ from django.views import View
 from django.views.decorators.http import require_POST
 
 from .decorators import administrator_required
+from .notifications import buat_notifikasi
 from .forms import (
     PelangganRegistrationForm,
     RoleAuthenticationForm,
 )
-from .models import User
+from .models import (
+    Notifikasi,
+    User,
+    
+)
 
 
 class RoleBasedLoginView(LoginView):
@@ -217,6 +222,15 @@ def verifikasi_pelanggan(request, pk):
 
     pelanggan.verifikasi(request.user)
 
+    buat_notifikasi(
+        penerima=pelanggan,
+        judul="Akun Berhasil Diverifikasi",
+        pesan=(
+            "Akun Anda telah berhasil diverifikasi oleh administrator."
+        ),
+        jenis=Notifikasi.JenisNotifikasi.VERIFIKASI,
+    )
+
     messages.success(
         request,
         (
@@ -265,6 +279,13 @@ def tolak_pelanggan(request, pk):
         update_fields=[
             "is_active",
         ]
+    )
+
+    buat_notifikasi(
+        penerima=pelanggan,
+        judul="Registrasi Ditolak",
+        pesan=f"Registrasi Anda ditolak. Alasan: {alasan}",
+        jenis=Notifikasi.JenisNotifikasi.VERIFIKASI,
     )
 
     messages.warning(

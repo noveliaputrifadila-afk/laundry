@@ -12,6 +12,7 @@ from django.views.decorators.http import require_POST
 from .decorators import (
     administrator_or_kasir_required,
 )
+from .notifications import buat_notifikasi
 from .forms import (
     KonfirmasiPesananForm,
     PenugasanPetugasForm,
@@ -20,10 +21,12 @@ from .forms import (
     UbahStatusPesananForm,
 )
 from .models import (
+    Notifikasi,
     Pesanan,
     RiwayatStatus,
     User,
 )
+
 
 
 @administrator_or_kasir_required
@@ -261,6 +264,16 @@ def pesanan_konfirmasi(request, pk):
                     ),
                 )
 
+            buat_notifikasi(
+                penerima=pesanan.pelanggan,
+                judul="Pesanan Diterima",
+                pesan=(
+                    f"Pesanan {pesanan.kode_pesanan} "
+                    "telah diterima dan akan segera diproses."
+                ),
+                jenis=Notifikasi.JenisNotifikasi.PESANAN,
+            )
+
             messages.success(
                 request,
                 (
@@ -346,6 +359,16 @@ def pesanan_tolak(request, pk):
                     status_baru=pesanan.status,
                     diubah_oleh=request.user,
                     catatan=pesanan.alasan_penolakan,
+                )
+
+                buat_notifikasi(
+                    penerima=pesanan.pelanggan,
+                    judul="Pesanan Ditolak",
+                    pesan=(
+                        f"Pesanan {pesanan.kode_pesanan} ditolak. "
+                        f"Alasan: {pesanan.alasan_penolakan}"
+                    ),
+                    jenis=Notifikasi.JenisNotifikasi.PESANAN,
                 )
 
             messages.success(
@@ -469,6 +492,17 @@ def pesanan_ubah_status(request, pk):
                 catatan=catatan,
             )
 
+            buat_notifikasi(
+                penerima=pesanan.pelanggan,
+                judul="Status Pesanan Diperbarui",
+                pesan=(
+                    f"Status pesanan {pesanan.kode_pesanan} "
+                    f"berubah menjadi "
+                    f"{pesanan.get_status_display()}."
+                ),
+                jenis=Notifikasi.JenisNotifikasi.PESANAN,
+            )
+
         messages.success(
             request,
             (
@@ -514,13 +548,16 @@ def pesanan_ubah_pembayaran(request, pk):
     if form.is_valid():
         pesanan = form.save()
 
-        messages.success(
-            request,
-            (
-                f"Status pembayaran "
+        buat_notifikasi(
+            penerima=pesanan.pelanggan,
+            judul="Status Pembayaran Diperbarui",
+            pesan=(
+                f"Status pembayaran pesanan "
                 f"{pesanan.kode_pesanan} "
-                "berhasil diperbarui."
+                f"berubah menjadi "
+                f"{pesanan.get_status_pembayaran_display()}."
             ),
+            jenis=Notifikasi.JenisNotifikasi.PEMBAYARAN,
         )
     else:
         messages.error(
