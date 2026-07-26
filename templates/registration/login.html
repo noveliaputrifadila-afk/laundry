@@ -1,21 +1,38 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}
-    Login | Laundry Management
+    Login | NSIA Laundry
 {% endblock %}
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <h2 class="fw-bold">
-                        Login
-                    </h2>
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="{% static 'css/guest.css' %}?v=1"
+>
+{% endblock %}
 
-                    <p class="text-muted">
-                        Masuk menggunakan akun Anda
+{% block guest_content %}
+<div class="guest-page">
+    <div class="guest-container">
+
+        <div class="guest-left">
+            {% include "includes/guest_branding.html" %}
+        </div>
+
+        <div class="guest-right">
+            <div class="guest-form-wrapper">
+
+                <div class="guest-form-header">
+                    <span class="guest-form-label">
+                        Selamat datang
+                    </span>
+
+                    <h2>Masuk ke akun Anda</h2>
+
+                    <p>
+                        Gunakan username dan password
+                        yang telah terdaftar.
                     </p>
                 </div>
 
@@ -38,7 +55,13 @@
                             Username
                         </label>
 
-                        {{ form.username }}
+                        <div class="input-group guest-input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-person"></i>
+                            </span>
+
+                            {{ form.username }}
+                        </div>
 
                         {% for error in form.username.errors %}
                             <div class="text-danger small mt-1">
@@ -55,7 +78,13 @@
                             Password
                         </label>
 
-                        {{ form.password }}
+                        <div class="input-group guest-input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+
+                            {{ form.password }}
+                        </div>
 
                         {% for error in form.password.errors %}
                             <div class="text-danger small mt-1">
@@ -64,44 +93,50 @@
                         {% endfor %}
                     </div>
 
-                    <div class="form-check mb-3">
-                        {{ form.remember_me }}
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            {{ form.remember_me }}
 
-                        <label
-                            class="form-check-label"
-                            for="{{ form.remember_me.id_for_label }}"
+                            <label
+                                class="form-check-label"
+                                for="{{ form.remember_me.id_for_label }}"
+                            >
+                                Ingat saya
+                            </label>
+                        </div>
+
+                        <a
+                            href="{% url 'password_reset' %}"
+                            class="guest-forgot-link"
                         >
-                            Ingat saya
-                        </label>
+                            Lupa password?
+                        </a>
                     </div>
-
-                    {% if next %}
-                        <input
-                            type="hidden"
-                            name="next"
-                            value="{{ next }}"
-                        >
-                    {% endif %}
 
                     <button
                         type="submit"
-                        class="btn btn-primary w-100"
+                        class="btn guest-submit-btn w-100"
                     >
-                        Login
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Masuk
                     </button>
                 </form>
 
-                <hr>
+                <div class="guest-divider">
+                    <span>atau</span>
+                </div>
 
-                <p class="text-center mb-0">
-                    Belum mempunyai akun?
+                <div class="text-center guest-register-link">
+                    <span>Belum mempunyai akun?</span>
 
                     <a href="{% url 'register' %}">
                         Registrasi pelanggan
                     </a>
-                </p>
+                </div>
+
             </div>
         </div>
+
     </div>
 </div>
 {% endblock %}

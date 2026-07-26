@@ -373,9 +373,78 @@ body {
 
 /* Responsive */
 
+/* Overlay untuk sidebar mobile */
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+
+    background: rgba(15, 23, 42, 0.55);
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 0.25s ease,
+        visibility 0.25s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Tombol hamburger */
+
+.sidebar-mobile-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+    padding: 0;
+
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+/* Responsive tablet dan mobile */
+
 @media (max-width: 991.98px) {
-    :root {
-        --sidebar-width: 240px;
+    .sidebar {
+        z-index: 1050;
+
+        width: 285px;
+        max-width: 85vw;
+
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.show {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .sidebar-mobile-toggle {
+        display: inline-flex;
+    }
+
+    .top-navbar {
+        padding: 12px 18px;
+    }
+
+    .navbar-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
     }
 
     .content-wrapper {
@@ -388,31 +457,38 @@ body {
 }
 
 @media (max-width: 767.98px) {
-    .sidebar {
-        position: relative;
-        width: 100%;
-        min-height: auto;
-    }
-
-    .app-layout {
-        display: block;
-    }
-
-    .main-content {
-        width: 100%;
-        margin-left: 0;
-    }
-
     .top-navbar {
-        padding: 12px 16px;
+        min-height: 64px;
+        padding: 10px 14px;
     }
 
     .content-wrapper {
-        padding: 16px;
+        padding: 14px;
+    }
+
+    .navbar-title {
+        font-size: 16px;
     }
 
     .navbar-subtitle {
         display: none;
+    }
+
+    .logout-button {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        justify-content: center;
+        margin-left: 0;
+    }
+
+    .logout-button span {
+        display: none;
+    }
+
+    .user-avatar {
+        width: 36px;
+        height: 36px;
     }
 }
 .app-footer {
