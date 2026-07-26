@@ -1,25 +1,41 @@
 <nav class="top-navbar">
-    <div>
-        <h5 class="navbar-title">
-            {% if request.user.role == "administrator" %}
-                Administrator
-            {% elif request.user.role == "kasir" %}
-                Kasir
-            {% elif request.user.role == "petugas_laundry" %}
-                Petugas Laundry
-            {% elif request.user.role == "pelanggan" %}
-                Pelanggan
-            {% else %}
-                Laundry Management System
-            {% endif %}
-        </h5>
 
-        <small class="navbar-subtitle">
-            Laundry Management System
-        </small>
+    <div class="navbar-left">
+
+        <button
+            type="button"
+            class="btn btn-primary sidebar-mobile-toggle"
+            id="sidebarMobileToggle"
+            aria-label="Buka menu sidebar"
+            aria-expanded="false"
+        >
+            <i class="bi bi-list fs-5"></i>
+        </button>
+
+        <div>
+            <h5 class="navbar-title">
+                {% if request.user.role == "administrator" %}
+                    Administrator
+                {% elif request.user.role == "kasir" %}
+                    Kasir
+                {% elif request.user.role == "petugaslaundry" %}
+                    Petugas Laundry
+                {% elif request.user.role == "pelanggan" %}
+                    Pelanggan
+                {% else %}
+                    Laundry Management System
+                {% endif %}
+            </h5>
+
+            <small class="navbar-subtitle">
+                Laundry Management System
+            </small>
+        </div>
+
     </div>
 
     <div class="navbar-user">
+
         <div class="user-avatar">
             {{ request.user.username|first|upper }}
         </div>
@@ -30,18 +46,19 @@
             </span>
 
             <small>
-                {% if request.user.is_authenticated %}
-                    {{ request.user.get_role_display }}
-                {% endif %}
+                {{ request.user.get_role_display }}
             </small>
         </div>
 
         <a
             href="{% url 'logout' %}"
             class="btn btn-outline-danger btn-sm logout-button"
+            title="Logout"
         >
             <i class="bi bi-box-arrow-right"></i>
-            Logout
+            <span>Logout</span>
         </a>
+
     </div>
+
 </nav>
