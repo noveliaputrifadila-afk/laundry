@@ -1,0 +1,277 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Log Aktivitas
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <div
+        class="d-flex flex-wrap
+               justify-content-between
+               align-items-center
+               gap-3 mb-4"
+    >
+        <div>
+            <h3 class="fw-bold mb-1">
+                Log Aktivitas
+            </h3>
+
+            <p class="text-muted mb-0">
+                Riwayat aktivitas pengguna
+                di dalam sistem.
+            </p>
+        </div>
+
+        <div class="badge text-bg-primary fs-6 px-3 py-2">
+            {{ total_log }} aktivitas
+        </div>
+    </div>
+
+    <div class="card border-0 mb-4">
+        <div class="card-body p-4">
+
+            <form method="get">
+                <div class="row g-3">
+
+                    <div class="col-lg-4 col-md-6">
+                        <label class="form-label">
+                            {{ form.keyword.label }}
+                        </label>
+
+                        {{ form.keyword }}
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">
+                            {{ form.jenis.label }}
+                        </label>
+
+                        {{ form.jenis }}
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">
+                            {{ form.pengguna.label }}
+                        </label>
+
+                        {{ form.pengguna }}
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">
+                            {{ form.tanggal_mulai.label }}
+                        </label>
+
+                        {{ form.tanggal_mulai }}
+                    </div>
+
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label">
+                            {{ form.tanggal_selesai.label }}
+                        </label>
+
+                        {{ form.tanggal_selesai }}
+                    </div>
+
+                </div>
+
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger mt-3 mb-0">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-search me-1"></i>
+                        Terapkan Filter
+                    </button>
+
+                    <a
+                        href="{% url 'administrator:log_aktivitas_list' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        <i class="bi bi-arrow-counterclockwise me-1"></i>
+                        Reset
+                    </a>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+    <div class="card border-0">
+        <div class="card-body p-0">
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">
+                                Waktu
+                            </th>
+                            <th>
+                                Pengguna
+                            </th>
+                            <th>
+                                Jenis
+                            </th>
+                            <th>
+                                Aktivitas
+                            </th>
+                            <th>
+                                Objek
+                            </th>
+                            <th>
+                                Alamat IP
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for log in page_obj %}
+                            <tr>
+                                <td class="ps-4 text-nowrap">
+                                    <div class="fw-semibold">
+                                        {{ log.dibuat_pada|date:"d M Y" }}
+                                    </div>
+
+                                    <small class="text-muted">
+                                        {{ log.dibuat_pada|date:"H:i:s" }}
+                                    </small>
+                                </td>
+
+                                <td>
+                                    {% if log.pengguna %}
+                                        <div class="fw-semibold">
+                                            {{ log.pengguna.get_full_name|default:log.pengguna.username }}
+                                        </div>
+
+                                        <small class="text-muted">
+                                            @{{ log.pengguna.username }}
+                                        </small>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            Sistem
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {% if log.jenis == "hapus" %}
+                                        <span class="badge text-bg-danger">
+                                            {{ log.get_jenis_display }}
+                                        </span>
+                                    {% elif log.jenis == "tambah" %}
+                                        <span class="badge text-bg-success">
+                                            {{ log.get_jenis_display }}
+                                        </span>
+                                    {% elif log.jenis == "ubah" or log.jenis == "status" %}
+                                        <span class="badge text-bg-warning">
+                                            {{ log.get_jenis_display }}
+                                        </span>
+                                    {% elif log.jenis == "login" %}
+                                        <span class="badge text-bg-primary">
+                                            {{ log.get_jenis_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge text-bg-secondary">
+                                            {{ log.get_jenis_display }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="fw-semibold">
+                                        {{ log.aktivitas }}
+                                    </div>
+
+                                    {% if log.keterangan %}
+                                        <small class="text-muted">
+                                            {{ log.keterangan|truncatechars:80 }}
+                                        </small>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ log.objek|default:"-" }}
+                                </td>
+
+                                <td class="text-nowrap">
+                                    {{ log.ip_address|default:"-" }}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td
+                                    colspan="6"
+                                    class="text-center py-5"
+                                >
+                                    <i
+                                        class="bi bi-clock-history
+                                               fs-1 text-muted"
+                                    ></i>
+
+                                    <h5 class="mt-3 mb-1">
+                                        Belum ada log aktivitas
+                                    </h5>
+
+                                    <p class="text-muted mb-0">
+                                        Aktivitas pengguna akan
+                                        ditampilkan di sini.
+                                    </p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}"
+                        >
+                            Sebelumnya
+                        </a>
+                    </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        {{ page_obj.number }}
+                        dari
+                        {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a
+                            class="page-link"
+                            href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}"
+                        >
+                            Selanjutnya
+                        </a>
+                    </li>
+                {% endif %}
+
+            </ul>
+        </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

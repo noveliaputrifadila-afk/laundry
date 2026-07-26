@@ -124,6 +124,7 @@ from .views_riwayat_status import (
     riwayat_status_detail,
     riwayat_status_list,
 )
+from . import views
 
 app_name = "administrator"
 
@@ -571,4 +572,10 @@ urlpatterns = [
         riwayat_status_detail,
         name="riwayat_status_detail",
     ),
+
+path(
+    "sistem/log-aktivitas/",
+    views.log_aktivitas_list,
+    name="log_aktivitas_list",
+),
 ]

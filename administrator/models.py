@@ -1215,3 +1215,78 @@ class PengaturanSistem(TimeStampedModel):
 
     def __str__(self):
         return self.nama_laundry
+
+class LogAktivitas(models.Model):
+    class JenisAktivitas(models.TextChoices):
+        LOGIN = "login", "Login"
+        LOGOUT = "logout", "Logout"
+        TAMBAH = "tambah", "Tambah Data"
+        UBAH = "ubah", "Ubah Data"
+        HAPUS = "hapus", "Hapus Data"
+        VERIFIKASI = "verifikasi", "Verifikasi"
+        PEMBAYARAN = "pembayaran", "Pembayaran"
+        PESANAN = "pesanan", "Pesanan"
+        STATUS = "status", "Perubahan Status"
+        LAINNYA = "lainnya", "Lainnya"
+
+    pengguna = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="log_aktivitas",
+        verbose_name="Pengguna",
+    )
+
+    jenis = models.CharField(
+        max_length=20,
+        choices=JenisAktivitas.choices,
+        default=JenisAktivitas.LAINNYA,
+        verbose_name="Jenis Aktivitas",
+    )
+
+    aktivitas = models.CharField(
+        max_length=255,
+        verbose_name="Aktivitas",
+    )
+
+    objek = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="Objek/Data",
+    )
+
+    keterangan = models.TextField(
+        blank=True,
+        verbose_name="Keterangan",
+    )
+
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        verbose_name="Alamat IP",
+    )
+
+    user_agent = models.TextField(
+        blank=True,
+        verbose_name="Perangkat",
+    )
+
+    dibuat_pada = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Waktu Aktivitas",
+    )
+
+    class Meta:
+        ordering = ["-dibuat_pada"]
+        verbose_name = "Log Aktivitas"
+        verbose_name_plural = "Log Aktivitas"
+
+    def __str__(self):
+        nama_pengguna = (
+            self.pengguna.username
+            if self.pengguna
+            else "Sistem"
+        )
+
+        return f"{nama_pengguna} - {self.aktivitas}"

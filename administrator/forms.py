@@ -5,7 +5,9 @@ from django.contrib.auth.forms import (
     AuthenticationForm,
     UserCreationForm,
 )
+from django.contrib.auth import get_user_model
 
+from .models import LogAktivitas
 from .models import KategoriLayanan, User, Layanan, Tarif, Promo, MetodePembayaran, AreaLayanan, PengaturanSistem, Pesanan
 
 
@@ -2033,3 +2035,103 @@ class UbahStatusPembayaranForm(
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.apply_bootstrap_classes()
+
+User = get_user_model()
+
+
+class FilterLogAktivitasForm(forms.Form):
+    keyword = forms.CharField(
+        required=False,
+        label="Pencarian",
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": (
+                    "Cari pengguna, aktivitas, "
+                    "objek, atau keterangan..."
+                ),
+            }
+        ),
+    )
+
+    jenis = forms.ChoiceField(
+        required=False,
+        label="Jenis Aktivitas",
+        choices=[
+            ("", "Semua Jenis"),
+            *LogAktivitas.JenisAktivitas.choices,
+        ],
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
+    )
+
+    pengguna = forms.ModelChoiceField(
+        required=False,
+        label="Pengguna",
+        queryset=User.objects.none(),
+        empty_label="Semua Pengguna",
+        widget=forms.Select(
+            attrs={
+                "class": "form-select",
+            }
+        ),
+    )
+
+    tanggal_mulai = forms.DateField(
+        required=False,
+        label="Tanggal Mulai",
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control",
+                "type": "date",
+            }
+        ),
+    )
+
+    tanggal_selesai = forms.DateField(
+        required=False,
+        label="Tanggal Selesai",
+        widget=forms.DateInput(
+            attrs={
+                "class": "form-control",
+                "type": "date",
+            }
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["pengguna"].queryset = (
+            User.objects.filter(
+                is_active=True,
+            )
+            .order_by(
+                "username",
+            )
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        tanggal_mulai = cleaned_data.get(
+            "tanggal_mulai"
+        )
+        tanggal_selesai = cleaned_data.get(
+            "tanggal_selesai"
+        )
+
+        if (
+            tanggal_mulai
+            and tanggal_selesai
+            and tanggal_mulai > tanggal_selesai
+        ):
+            raise forms.ValidationError(
+                "Tanggal mulai tidak boleh "
+                "lebih besar dari tanggal selesai."
+            )
+
+        return cleaned_data
