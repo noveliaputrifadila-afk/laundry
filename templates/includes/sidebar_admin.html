@@ -311,6 +311,17 @@
                                 <span class="submenu-dot"></span>
                                 Pengaturan Sistem
                             </a>
+
+                            <a
+                                href="{% url 'administrator:log_aktivitas_list' %}"
+                                class="nav-link
+                                {% if url_name == 'log_aktivitas_list' %}
+                                    active
+                                {% endif %}"
+                            >
+                                <i class="bi bi-clock-history"></i>
+                                <span>Log Aktivitas</span>
+                            </a>
                         </div>
                     </div>
                 </div>
