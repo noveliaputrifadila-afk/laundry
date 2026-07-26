@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}
+Upload Bukti Pembayaran | NSIA Laundry
+{% endblock %}
+
+{% block content %}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+
+        <div class="d-flex align-items-center mb-4">
+            <a
+                href="{% url 'pelanggan:pembayaran_list' %}"
+                class="btn btn-outline-secondary me-3"
+            >
+                <i class="bi bi-arrow-left"></i>
+            </a>
+
+            <div>
+                <h2 class="fw-bold mb-1">
+                    Upload Bukti Pembayaran
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Kirim bukti pembayaran untuk pesanan
+                    {{ pesanan.kode_pesanan }}.
+                </p>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-white">
+                <h5 class="fw-bold mb-0">
+                    Informasi Tagihan
+                </h5>
+            </div>
+
+            <div class="card-body">
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Kode Pesanan
+                        </div>
+
+                        <div class="fw-semibold">
+                            {{ pesanan.kode_pesanan }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="text-muted small">
+                            Metode Pembayaran
+                        </div>
+
+                        <div class="fw-semibold">
+                            {% if pesanan.metode_pembayaran %}
+                                {{ pesanan.metode_pembayaran.nama }}
+                            {% else %}
+                                Belum dipilih
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="text-muted small">
+                            Total Tagihan
+                        </div>
+
+                        <div class="fw-bold">
+                            Rp {{ pesanan.total_biaya|floatformat:0 }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="text-muted small">
+                            Sudah Dibayar
+                        </div>
+
+                        <div class="fw-bold text-success">
+                            Rp {{ total_berhasil|floatformat:0 }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="text-muted small">
+                            Sisa Tagihan
+                        </div>
+
+                        <div class="fw-bold text-danger">
+                            Rp {{ sisa_tagihan|floatformat:0 }}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white">
+                <h5 class="fw-bold mb-0">
+                    Form Pembayaran
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                <form
+                    method="post"
+                    enctype="multipart/form-data"
+                    novalidate
+                >
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label
+                            for="{{ form.jumlah.id_for_label }}"
+                            class="form-label fw-semibold"
+                        >
+                            Jumlah Pembayaran
+                        </label>
+
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                Rp
+                            </span>
+
+                            {{ form.jumlah }}
+                        </div>
+
+                        {% for error in form.jumlah.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                        <div class="form-text">
+                            Maksimal sebesar sisa tagihan.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label
+                            for="{{ form.bukti_pembayaran.id_for_label }}"
+                            class="form-label fw-semibold"
+                        >
+                            Bukti Pembayaran
+                        </label>
+
+                        {{ form.bukti_pembayaran }}
+
+                        {% for error in form.bukti_pembayaran.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+
+                        <div class="form-text">
+                            Unggah gambar bukti transfer dengan ukuran
+                            maksimal 2 MB.
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label
+                            for="{{ form.catatan.id_for_label }}"
+                            class="form-label fw-semibold"
+                        >
+                            Catatan
+                        </label>
+
+                        {{ form.catatan }}
+
+                        {% for error in form.catatan.errors %}
+                            <div class="text-danger small mt-1">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a
+                            href="{% url 'pelanggan:pembayaran_list' %}"
+                            class="btn btn-outline-secondary"
+                        >
+                            Batal
+                        </a>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-send me-1"></i>
+                            Kirim Bukti Pembayaran
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

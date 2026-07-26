@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}
+Pembayaran | NSIA Laundry
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Pembayaran
+        </h2>
+
+        <p class="text-muted mb-0">
+            Kelola pembayaran pesanan laundry Anda.
+        </p>
+    </div>
+</div>
+
+{% if pesanan_belum_lunas %}
+<div class="card shadow-sm border-0 mb-4">
+
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            Pesanan Belum Lunas
+        </h5>
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-light">
+
+                <tr>
+                    <th>Kode</th>
+                    <th>Tanggal</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for pesanan in pesanan_belum_lunas %}
+
+                <tr>
+
+                    <td>
+                        {{ pesanan.kode_pesanan }}
+                    </td>
+
+                    <td>
+                        {{ pesanan.created_at|date:"d M Y H:i" }}
+                    </td>
+
+                    <td>
+                        Rp {{ pesanan.total_biaya|floatformat:0 }}
+                    </td>
+
+                    <td>
+
+                        <span class="badge bg-warning text-dark">
+
+                            {{ pesanan.get_status_pembayaran_display }}
+
+                        </span>
+
+                    </td>
+
+                    <td class="text-end">
+
+                        <a
+                            href="{% url 'pelanggan:pembayaran_tambah' pesanan.id %}"
+                            class="btn btn-primary btn-sm"
+                        >
+                            <i class="bi bi-upload"></i>
+                            Upload Bukti
+                        </a>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+{% endif %}
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-header bg-white">
+
+        <h5 class="mb-0 fw-bold">
+            Riwayat Pembayaran
+        </h5>
+
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-light">
+
+                <tr>
+                    <th>Kode Pembayaran</th>
+                    <th>Pesanan</th>
+                    <th>Tanggal</th>
+                    <th>Jumlah</th>
+                    <th>Status</th>
+                    <th>Bukti</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for pembayaran in pembayaran_list %}
+
+                <tr>
+
+                    <td>
+
+                        {{ pembayaran.kode_pembayaran }}
+
+                    </td>
+
+                    <td>
+
+                        {{ pembayaran.pesanan.kode_pesanan }}
+
+                    </td>
+
+                    <td>
+
+                        {{ pembayaran.tanggal_pembayaran|date:"d M Y H:i" }}
+
+                    </td>
+
+                    <td>
+
+                        Rp {{ pembayaran.jumlah|floatformat:0 }}
+
+                    </td>
+
+                    <td>
+
+                        {% if pembayaran.status == "berhasil" %}
+
+                        <span class="badge bg-success">
+
+                            {{ pembayaran.get_status_display }}
+
+                        </span>
+
+                        {% elif pembayaran.status == "menunggu" %}
+
+                        <span class="badge bg-warning text-dark">
+
+                            {{ pembayaran.get_status_display }}
+
+                        </span>
+
+                        {% else %}
+
+                        <span class="badge bg-danger">
+
+                            {{ pembayaran.get_status_display }}
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+
+                        {% if pembayaran.bukti_pembayaran %}
+
+                        <a
+                            href="{{ pembayaran.bukti_pembayaran.url }}"
+                            target="_blank"
+                            class="btn btn-outline-primary btn-sm"
+                        >
+                            Lihat
+                        </a>
+
+                        {% else %}
+
+                        <span class="text-muted">
+
+                            -
+
+                        </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="text-center py-5 text-muted"
+                    >
+
+                        Belum ada pembayaran.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
