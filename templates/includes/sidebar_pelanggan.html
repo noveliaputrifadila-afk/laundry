@@ -29,29 +29,71 @@
     </div>
 
     <nav class="sidebar-menu">
-        <a href="#" class="nav-link active">
-            <i class="bi bi-grid-1x2-fill"></i>
-            <span>Dashboard</span>
-        </a>
+       <a
+    href="{% url 'pelanggan:dashboard' %}"
+    class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+>
+    <i class="bi bi-speedometer2 me-2"></i>
+    Dashboard
+</a>
 
-        <a href="#" class="nav-link">
-            <i class="bi bi-cart-plus"></i>
-            <span>Buat Pesanan</span>
-        </a>
+        <a
+    href="{% url 'pelanggan:pesanan_tambah' %}"
+    class="nav-link {% if request.resolver_match.url_name == 'pesanan_tambah' %}active{% endif %}"
+>
+    <i class="bi bi-cart-plus"></i>
+    <span>Buat Pesanan</span>
+</a>
 
-        <a href="#" class="nav-link">
-            <i class="bi bi-bag-check"></i>
-            <span>Pesanan Saya</span>
-        </a>
+       <a
+    href="{% url 'pelanggan:pesanan_saya' %}"
+    class="nav-link
+    {% if request.resolver_match.url_name == 'pesanan_saya' %}
+        active
+    {% endif %}"
+>
+    <i class="bi bi-bag-check"></i>
+    <span>Pesanan Saya</span>
+</a>
 
-        <a href="#" class="nav-link">
-            <i class="bi bi-geo-alt"></i>
-            <span>Lacak Laundry</span>
-        </a>
+<a
+    href="{% url 'pelanggan:lacak_laundry' %}"
+    class="nav-link
+    {% if request.resolver_match.url_name == 'lacak_laundry' %}
+        active
+    {% endif %}"
+>
+    <i class="bi bi-geo-alt"></i>
+    <span>Lacak Laundry</span>
+</a>
 
-        <a href="#" class="nav-link">
-            <i class="bi bi-credit-card"></i>
-            <span>Pembayaran</span>
-        </a>
+<a
+    href="{% url 'pelanggan:pembayaran_list' %}"
+    class="nav-link
+        {% if request.resolver_match.url_name == 'pembayaran_list' or request.resolver_match.url_name == 'pembayaran_tambah' %}
+            active
+        {% endif %}
+    "
+>
+    <i class="bi bi-wallet2 me-2"></i>
+    Pembayaran
+</a>
+<a
+    href="{% url 'pelanggan:invoice_list' %}"
+    class="nav-link {% if request.resolver_match.url_name == 'invoice_list' %}active{% endif %}"
+>
+    <i class="bi bi-receipt me-2"></i>
+    <span>Invoice</span>
+</a>
+
+<a
+    href="{% url 'pelanggan:notifikasi_list' %}"
+    class="nav-link {% if request.resolver_match.url_name == 'notifikasi_list' or request.resolver_match.url_name == 'notifikasi_baca' %}active{% endif %}"
+>
+    <i class="bi bi-bell me-2"></i>
+    <span>Notifikasi</span>
+</a>
+
+</nav>
     </nav>
 </aside>

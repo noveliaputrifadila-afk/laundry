@@ -8,6 +8,8 @@ from administrator.models import (
     MetodePembayaran,
     Pesanan,
     Promo,
+    Pembayaran,
+    User,
 )
 
 
@@ -245,3 +247,103 @@ class DetailPesananPelangganForm(forms.ModelForm):
         self.fields["layanan"].empty_label = (
             "Pilih layanan laundry"
         )
+
+DetailPesananFormSet = forms.inlineformset_factory(
+    Pesanan,
+    DetailPesanan,
+    form=DetailPesananPelangganForm,
+    extra=1,
+    can_delete=True,
+    min_num=1,
+    validate_min=True,
+)        
+
+class PembayaranPelangganForm(forms.ModelForm):
+    class Meta:
+        model = Pembayaran
+        fields = [
+            "jumlah",
+            "bukti_pembayaran",
+            "catatan",
+        ]
+
+        widgets = {
+            "jumlah": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "1",
+                    "step": "0.01",
+                    "placeholder": "Masukkan jumlah pembayaran",
+                }
+            ),
+            "bukti_pembayaran": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": "image/*",
+                }
+            ),
+            "catatan": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 3,
+                    "placeholder": "Catatan pembayaran",
+                }
+            ),
+        }
+
+    def clean_bukti_pembayaran(self):
+        bukti = self.cleaned_data.get(
+            "bukti_pembayaran"
+        )
+
+        if not bukti:
+            raise forms.ValidationError(
+                "Bukti pembayaran wajib diunggah."
+            )
+
+        if bukti.size > 2 * 1024 * 1024:
+            raise forms.ValidationError(
+                "Ukuran bukti maksimal 2 MB."
+            )
+
+        return bukti
+    
+class ProfilPelangganForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = [
+            "first_name",
+            "email",
+            "nomor_hp",
+            "alamat",
+        ]
+
+        widgets = {
+            "first_name": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Masukkan nama lengkap",
+                }
+            ),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Masukkan email",
+                }
+            ),
+            "nomor_hp": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Masukkan nomor HP",
+                }
+            ),
+            "alamat": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Masukkan alamat lengkap",
+                    "rows": 4,
+                }
+            ),
+        }
+
+    

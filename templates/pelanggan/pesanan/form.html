@@ -1,0 +1,448 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Buat Pesanan | NSIA Laundry
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-start mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Buat Pesanan Laundry
+        </h2>
+
+        <p class="text-muted mb-0">
+            Pilih satu atau beberapa layanan sesuai kebutuhan.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'pelanggan:dashboard' %}"
+        class="btn btn-outline-secondary"
+    >
+        <i class="bi bi-arrow-left me-1"></i>
+        Kembali
+    </a>
+</div>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+            {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-basket2 me-2 text-primary"></i>
+                Detail Layanan
+            </h5>
+        </div>
+
+        <div class="card-body">
+            {{ formset.management_form }}
+
+            {% if formset.non_form_errors %}
+                <div class="alert alert-danger">
+                    {% for error in formset.non_form_errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div id="detail-form-list">
+                {% for detail_form in formset %}
+                    <div class="detail-form-item border rounded-4 p-3 mb-3">
+                        {% for hidden in detail_form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold mb-0">
+                                Layanan
+                                <span class="detail-number">
+                                    {{ forloop.counter }}
+                                </span>
+                            </h6>
+
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-outline-danger remove-detail"
+                            >
+                                <i class="bi bi-trash"></i>
+                                Hapus
+                            </button>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Layanan
+                                </label>
+
+                                {{ detail_form.layanan }}
+
+                                {% for error in detail_form.layanan.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    Nama barang
+                                </label>
+
+                                {{ detail_form.nama_barang }}
+
+                                {% for error in detail_form.nama_barang.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">
+                                    Jumlah atau berat
+                                </label>
+
+                                {{ detail_form.jumlah }}
+
+                                {% for error in detail_form.jumlah.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="col-md-8 mb-3">
+                                <label class="form-label">
+                                    Catatan
+                                </label>
+
+                                {{ detail_form.catatan }}
+
+                                {% for error in detail_form.catatan.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="d-none delete-field">
+                            {{ detail_form.DELETE }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button
+                type="button"
+                id="add-detail"
+                class="btn btn-outline-primary"
+            >
+                <i class="bi bi-plus-circle me-1"></i>
+                Tambah Layanan
+            </button>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-truck me-2 text-primary"></i>
+                Pengantaran dan Penjemputan
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Jenis pengantaran
+                    </label>
+
+                    {{ form.jenis_pengantaran }}
+
+                    {% for error in form.jenis_pengantaran.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Area layanan
+                    </label>
+
+                    {{ form.area_layanan }}
+
+                    {% for error in form.area_layanan.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Alamat penjemputan
+                    </label>
+
+                    {{ form.alamat_penjemputan }}
+
+                    {% for error in form.alamat_penjemputan.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Alamat pengantaran
+                    </label>
+
+                    {{ form.alamat_pengantaran }}
+
+                    {% for error in form.alamat_pengantaran.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Jadwal penjemputan
+                    </label>
+
+                    {{ form.tanggal_penjemputan }}
+
+                    {% for error in form.tanggal_penjemputan.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0">
+                <i class="bi bi-wallet2 me-2 text-primary"></i>
+                Pembayaran
+            </h5>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Metode pembayaran
+                    </label>
+
+                    {{ form.metode_pembayaran }}
+
+                    {% for error in form.metode_pembayaran.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Promo
+                    </label>
+
+                    {{ form.promo }}
+
+                    {% for error in form.promo.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-12 mb-3">
+                    <label class="form-label">
+                        Catatan pelanggan
+                    </label>
+
+                    {{ form.catatan_pelanggan }}
+
+                    {% for error in form.catatan_pelanggan.errors %}
+                        <div class="text-danger small mt-1">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mb-4">
+        <a
+            href="{% url 'pelanggan:dashboard' %}"
+            class="btn btn-outline-secondary px-4"
+        >
+            Batal
+        </a>
+
+        <button
+            type="submit"
+            class="btn btn-primary px-4"
+        >
+            <i class="bi bi-check-circle me-1"></i>
+            Buat Pesanan
+        </button>
+    </div>
+</form>
+
+<template id="empty-detail-form">
+    <div class="detail-form-item border rounded-4 p-3 mb-3">
+        {% with detail_form=formset.empty_form %}
+            {% for hidden in detail_form.hidden_fields %}
+                {{ hidden }}
+            {% endfor %}
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">
+                    Layanan
+                    <span class="detail-number"></span>
+                </h6>
+
+                <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger remove-detail"
+                >
+                    <i class="bi bi-trash"></i>
+                    Hapus
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Layanan
+                    </label>
+                    {{ detail_form.layanan }}
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">
+                        Nama barang
+                    </label>
+                    {{ detail_form.nama_barang }}
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">
+                        Jumlah atau berat
+                    </label>
+                    {{ detail_form.jumlah }}
+                </div>
+
+                <div class="col-md-8 mb-3">
+                    <label class="form-label">
+                        Catatan
+                    </label>
+                    {{ detail_form.catatan }}
+                </div>
+            </div>
+
+            <div class="d-none delete-field">
+                {{ detail_form.DELETE }}
+            </div>
+        {% endwith %}
+    </div>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const list = document.getElementById("detail-form-list");
+    const addButton = document.getElementById("add-detail");
+    const totalForms = document.getElementById("id_detail-TOTAL_FORMS");
+    const template = document.getElementById("empty-detail-form");
+
+    function updateNumbers() {
+        const visibleForms = list.querySelectorAll(
+            ".detail-form-item:not(.d-none)"
+        );
+
+        visibleForms.forEach(function (item, index) {
+            const number = item.querySelector(".detail-number");
+
+            if (number) {
+                number.textContent = index + 1;
+            }
+        });
+    }
+
+    function attachRemoveButton(item) {
+        const button = item.querySelector(".remove-detail");
+
+        button.addEventListener("click", function () {
+            const deleteInput = item.querySelector(
+                'input[name$="-DELETE"]'
+            );
+
+            const visibleForms = list.querySelectorAll(
+                ".detail-form-item:not(.d-none)"
+            );
+
+            if (visibleForms.length <= 1) {
+                alert("Pesanan minimal memiliki satu layanan.");
+                return;
+            }
+
+            if (deleteInput) {
+                deleteInput.checked = true;
+            }
+
+            item.classList.add("d-none");
+            updateNumbers();
+        });
+    }
+
+    list.querySelectorAll(".detail-form-item").forEach(
+        attachRemoveButton
+    );
+
+    addButton.addEventListener("click", function () {
+        const formIndex = parseInt(totalForms.value, 10);
+        const html = template.innerHTML.replaceAll(
+            "__prefix__",
+            formIndex
+        );
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = html.trim();
+
+        const newItem = wrapper.firstElementChild;
+
+        list.appendChild(newItem);
+        totalForms.value = formIndex + 1;
+
+        attachRemoveButton(newItem);
+        updateNumbers();
+    });
+
+    updateNumbers();
+});
+</script>
+{% endblock %}

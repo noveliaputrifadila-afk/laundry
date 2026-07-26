@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Pesanan Saya | NSIA Laundry
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Pesanan Saya
+        </h2>
+
+        <p class="text-muted mb-0">
+            Lihat seluruh riwayat dan perkembangan pesanan laundry Anda.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'pelanggan:pesanan_tambah' %}"
+        class="btn btn-primary"
+    >
+        <i class="bi bi-plus-circle me-1"></i>
+        Buat Pesanan
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-6">
+                    <label
+                        for="q"
+                        class="form-label"
+                    >
+                        Pencarian
+                    </label>
+
+                    <input
+                        type="text"
+                        id="q"
+                        name="q"
+                        value="{{ keyword }}"
+                        class="form-control"
+                        placeholder="Cari kode pesanan, layanan, atau barang"
+                    >
+                </div>
+
+                <div class="col-lg-3">
+                    <label
+                        for="status"
+                        class="form-label"
+                    >
+                        Status
+                    </label>
+
+                    <select
+                        id="status"
+                        name="status"
+                        class="form-select"
+                    >
+                        <option value="">
+                            Semua status
+                        </option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if status_dipilih == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-lg-3">
+                    <div class="d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary flex-grow-1"
+                        >
+                            <i class="bi bi-search me-1"></i>
+                            Cari
+                        </button>
+
+                        <a
+                            href="{% url 'pelanggan:pesanan_saya' %}"
+                            class="btn btn-outline-secondary"
+                            title="Reset filter"
+                        >
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white py-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">
+                Daftar Pesanan
+            </h5>
+
+            <span class="badge text-bg-primary">
+                {{ page_obj.paginator.count }} pesanan
+            </span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Kode Pesanan</th>
+                    <th>Tanggal</th>
+                    <th>Layanan</th>
+                    <th>Status</th>
+                    <th>Pembayaran</th>
+                    <th>Total</th>
+                    <th class="text-center">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for pesanan in page_obj %}
+                    <tr>
+                        <td>
+                            <strong>
+                                {{ pesanan.kode_pesanan }}
+                            </strong>
+                        </td>
+
+                        <td>
+                            {{ pesanan.created_at|date:"d M Y H:i" }}
+                        </td>
+
+                        <td>
+                            {% for detail in pesanan.detail_pesanan.all|slice:":2" %}
+                                <div>
+                                    {{ detail.layanan.nama }}
+                                </div>
+                            {% empty %}
+                                <span class="text-muted">
+                                    Tidak ada detail
+                                </span>
+                            {% endfor %}
+                        </td>
+
+                        <td>
+                            {% if pesanan.status == "menunggu_konfirmasi" %}
+                                <span class="badge text-bg-warning">
+                                    {{ pesanan.get_status_display }}
+                                </span>
+                            {% elif pesanan.status == "ditolak" or pesanan.status == "dibatalkan" %}
+                                <span class="badge text-bg-danger">
+                                    {{ pesanan.get_status_display }}
+                                </span>
+                            {% elif pesanan.status == "selesai" %}
+                                <span class="badge text-bg-success">
+                                    {{ pesanan.get_status_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge text-bg-primary">
+                                    {{ pesanan.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if pesanan.status_pembayaran == "lunas" %}
+                                <span class="badge text-bg-success">
+                                    {{ pesanan.get_status_pembayaran_display }}
+                                </span>
+                            {% elif pesanan.status_pembayaran == "gagal" %}
+                                <span class="badge text-bg-danger">
+                                    {{ pesanan.get_status_pembayaran_display }}
+                                </span>
+                            {% else %}
+                                <span class="badge text-bg-warning">
+                                    {{ pesanan.get_status_pembayaran_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            <strong>
+                                Rp {{ pesanan.total_biaya|floatformat:0 }}
+                            </strong>
+                        </td>
+
+                        <td class="text-center">
+                            <a
+                                href="#"
+                                class="btn btn-sm btn-outline-primary"
+                                title="Lihat detail"
+                            >
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td
+                            colspan="7"
+                            class="text-center py-5"
+                        >
+                            <div class="text-muted">
+                                <i class="bi bi-bag-x fs-1 d-block mb-3"></i>
+
+                                <h6 class="fw-bold">
+                                    Belum ada pesanan
+                                </h6>
+
+                                <p class="mb-3">
+                                    Buat pesanan laundry pertama Anda.
+                                </p>
+
+                                <a
+                                    href="{% url 'pelanggan:pesanan_tambah' %}"
+                                    class="btn btn-primary btn-sm"
+                                >
+                                    Buat Pesanan
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <div class="card-footer bg-white">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&status={{ status_dipilih }}"
+                            >
+                                Sebelumnya
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            {{ page_obj.number }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a
+                                class="page-link"
+                                href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&status={{ status_dipilih }}"
+                            >
+                                Berikutnya
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

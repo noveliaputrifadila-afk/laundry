@@ -524,3 +524,51 @@ body {
         text-align: center;
     }
 }
+
+.tracking-card {
+    border-radius: 18px;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.tracking-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 35px rgba(15, 23, 42, 0.09) !important;
+}
+
+.tracking-progress .progress {
+    border-radius: 999px;
+    background-color: #e2e8f0;
+}
+
+.tracking-progress .progress-bar {
+    border-radius: 999px;
+    background: linear-gradient(
+        90deg,
+        #2563eb,
+        #06b6d4
+    );
+}
+
+.tracking-info {
+    height: 100%;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.tracking-info-icon {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    color: #2563eb;
+    background: #dbeafe;
+}

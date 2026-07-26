@@ -1,0 +1,278 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Lacak Laundry | NSIA Laundry
+{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Lacak Laundry
+        </h2>
+
+        <p class="text-muted mb-0">
+            Pantau perkembangan pesanan laundry yang sedang diproses.
+        </p>
+    </div>
+
+    <a
+        href="{% url 'pelanggan:pesanan_saya' %}"
+        class="btn btn-outline-primary"
+    >
+        <i class="bi bi-bag-check me-1"></i>
+        Semua Pesanan
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get">
+            <div class="row g-3 align-items-end">
+                <div class="col-lg-9">
+                    <label
+                        for="q"
+                        class="form-label"
+                    >
+                        Cari pesanan
+                    </label>
+
+                    <input
+                        type="text"
+                        id="q"
+                        name="q"
+                        value="{{ keyword }}"
+                        class="form-control"
+                        placeholder="Masukkan kode pesanan, layanan, atau nama barang"
+                    >
+                </div>
+
+                <div class="col-lg-3">
+                    <div class="d-flex gap-2">
+                        <button
+                            type="submit"
+                            class="btn btn-primary flex-grow-1"
+                        >
+                            <i class="bi bi-search me-1"></i>
+                            Cari
+                        </button>
+
+                        <a
+                            href="{% url 'pelanggan:lacak_laundry' %}"
+                            class="btn btn-outline-secondary"
+                            title="Reset pencarian"
+                        >
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    {% for pesanan in pesanan_list %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm tracking-card">
+                <div class="card-body p-4">
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+                        <div>
+                            <span class="text-muted small">
+                                Kode Pesanan
+                            </span>
+
+                            <h5 class="fw-bold mb-1">
+                                {{ pesanan.kode_pesanan }}
+                            </h5>
+
+                            <span class="text-muted small">
+                                Dibuat {{ pesanan.created_at|date:"d M Y H:i" }}
+                            </span>
+                        </div>
+
+                        <div class="text-end">
+                            <span class="badge rounded-pill text-bg-primary px-3 py-2">
+                                {{ pesanan.get_status_display }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="tracking-progress mb-4">
+    <div class="progress" style="height: 10px;">
+        <div
+            class="progress-bar"
+            role="progressbar"
+            data-progress="{{ pesanan.progress }}"
+        ></div>
+    </div>
+</div>
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <small class="text-muted">
+                                Pesanan dibuat
+                            </small>
+
+                            <small class="fw-semibold text-primary">
+                                {{ pesanan.get_status_display }}
+                            </small>
+
+                            <small class="text-muted">
+                                Selesai
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <div class="tracking-info">
+                                <span class="tracking-info-icon">
+                                    <i class="bi bi-basket2"></i>
+                                </span>
+
+                                <div>
+                                    <small class="text-muted d-block">
+                                        Layanan
+                                    </small>
+
+                                    {% for detail in pesanan.detail.all|slice:":2" %}
+                                        <span class="fw-semibold d-block">
+                                            {{ detail.layanan.nama }}
+                                        </span>
+                                    {% empty %}
+                                        <span class="text-muted">
+                                            Belum ada detail
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="tracking-info">
+                                <span class="tracking-info-icon">
+                                    <i class="bi bi-person-gear"></i>
+                                </span>
+
+                                <div>
+                                    <small class="text-muted d-block">
+                                        Petugas
+                                    </small>
+
+                                    <span class="fw-semibold">
+                                        {% if pesanan.petugas_laundry %}
+                                            {{ pesanan.petugas_laundry.get_full_name|default:pesanan.petugas_laundry.username }}
+                                        {% else %}
+                                            Belum ditugaskan
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="tracking-info">
+                                <span class="tracking-info-icon">
+                                    <i class="bi bi-clock-history"></i>
+                                </span>
+
+                                <div>
+                                    <small class="text-muted d-block">
+                                        Estimasi selesai
+                                    </small>
+
+                                    <span class="fw-semibold">
+                                        {% if pesanan.estimasi_selesai %}
+                                            {{ pesanan.estimasi_selesai|date:"d M Y H:i" }}
+                                        {% else %}
+                                            Belum ditentukan
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="tracking-info">
+                                <span class="tracking-info-icon">
+                                    <i class="bi bi-wallet2"></i>
+                                </span>
+
+                                <div>
+                                    <small class="text-muted d-block">
+                                        Pembayaran
+                                    </small>
+
+                                    <span class="fw-semibold">
+                                        {{ pesanan.get_status_pembayaran_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                        <div>
+                            <small class="text-muted d-block">
+                                Total biaya
+                            </small>
+
+                            <strong class="fs-5">
+                                Rp {{ pesanan.total_biaya|floatformat:0 }}
+                            </strong>
+                        </div>
+
+                        <a
+                            href="#"
+                            class="btn btn-outline-primary"
+                        >
+                            <i class="bi bi-eye me-1"></i>
+                            Lihat Detail
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-geo-alt fs-1 text-muted d-block mb-3"></i>
+
+                    <h5 class="fw-bold">
+                        Tidak ada laundry yang sedang diproses
+                    </h5>
+
+                    <p class="text-muted">
+                        Pesanan aktif Anda akan muncul di halaman ini.
+                    </p>
+
+                    <a
+                        href="{% url 'pelanggan:pesanan_tambah' %}"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-plus-circle me-1"></i>
+                        Buat Pesanan
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const progressBars = document.querySelectorAll(
+            ".progress-bar[data-progress]"
+        );
+
+        progressBars.forEach(function (bar) {
+            const progress = bar.dataset.progress || 0;
+            bar.style.width = progress + "%";
+        });
+    });
+</script>
+{% endblock %}
