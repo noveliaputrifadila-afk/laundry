@@ -5,6 +5,8 @@ from .views_pesanan import (
     pesanan_create,
     pesanan_detail,
     pesanan_list,
+    pesanan_terima,
+    pesanan_tolak,
 )
 from .views_invoice import (
     invoice_batalkan,
@@ -37,6 +39,17 @@ urlpatterns = [
         "",
         dashboard,
         name="dashboard",
+    ),
+        path(
+        "pesanan/<int:pk>/terima/",
+        pesanan_terima,
+        name="pesanan_terima",
+    ),
+
+    path(
+        "pesanan/<int:pk>/tolak/",
+        pesanan_tolak,
+        name="pesanan_tolak",
     ),
     path(
         "pesanan/",
@@ -148,4 +161,6 @@ urlpatterns = [
         riwayat_transaksi,
         name="riwayat_transaksi",
     ),
+
+
 ]

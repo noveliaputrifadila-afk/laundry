@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}
+Beri Rating
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-xl-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h4 class="mb-1">
+                        <i class="bi bi-star-fill text-warning me-2"></i>
+                        Beri Rating
+                    </h4>
+                    <p class="text-muted mb-0">
+                        Pesanan {{ pesanan.kode_pesanan }}
+                    </p>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="alert alert-light border mb-4">
+                        <div class="row g-2">
+                            <div class="col-sm-5 text-muted">
+                                Kode Pesanan
+                            </div>
+                            <div class="col-sm-7 fw-semibold">
+                                {{ pesanan.kode_pesanan }}
+                            </div>
+
+                            <div class="col-sm-5 text-muted">
+                                Status
+                            </div>
+                            <div class="col-sm-7">
+                                <span class="badge bg-success">
+                                    {{ pesanan.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+
+                        <div class="mb-4">
+                            <label
+                                for="{{ form.nilai.id_for_label }}"
+                                class="form-label fw-semibold"
+                            >
+                                {{ form.nilai.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            {{ form.nilai }}
+
+                            {% for error in form.nilai.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label
+                                for="{{ form.ulasan.id_for_label }}"
+                                class="form-label fw-semibold"
+                            >
+                                {{ form.ulasan.label }}
+                            </label>
+
+                            {{ form.ulasan }}
+
+                            {% for error in form.ulasan.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ error }}
+                                </div>
+                            {% endfor %}
+
+                            <div class="form-text">
+                                Ceritakan pengalaman Anda menggunakan layanan laundry.
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a
+                                href="{% url 'pelanggan:pesanan_saya' %}"
+                                class="btn btn-outline-secondary"
+                            >
+                                <i class="bi bi-arrow-left me-1"></i>
+                                Kembali
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="btn btn-warning"
+                            >
+                                <i class="bi bi-star-fill me-1"></i>
+                                Kirim Rating
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

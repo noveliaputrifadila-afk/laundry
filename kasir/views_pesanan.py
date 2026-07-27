@@ -6,13 +6,15 @@ from django.shortcuts import (
     render,
 )
 
-from administrator.models import Pesanan, User
+from administrator.models import Pesanan, User, RiwayatStatus
 
 from .decorators import kasir_required
 from decimal import Decimal
 
 from django.contrib import messages
 from django.db import transaction
+from django.views.decorators.http import require_POST
+
 from .forms_pesanan import (
     DetailPesananFormSet,
     PesananKasirForm,
@@ -355,4 +357,110 @@ def pesanan_detail(request, pk):
         request,
         "kasir/pesanan/detail.html",
         context,
+    )
+
+from django.views.decorators.http import require_POST
+
+
+@require_POST
+@kasir_required
+def pesanan_terima(request, pk):
+    pesanan = get_object_or_404(
+        Pesanan,
+        pk=pk,
+    )
+
+    if (
+        pesanan.status
+        != Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI
+    ):
+        messages.warning(
+            request,
+            "Pesanan ini sudah diproses sebelumnya.",
+        )
+
+        return redirect(
+            "kasir:pesanan_detail",
+            pk=pesanan.pk,
+        )
+
+    petugas = (
+        User.objects
+        .filter(
+            role=User.Role.PETUGAS_LAUNDRY,
+            is_active=True,
+            is_verified=True,
+        )
+        .order_by("id")
+        .first()
+    )
+
+    if petugas is None:
+        messages.error(
+            request,
+            "Belum ada Petugas Laundry yang aktif.",
+        )
+
+        return redirect(
+            "kasir:pesanan_detail",
+            pk=pesanan.pk,
+        )
+
+    status_sebelumnya = pesanan.status
+
+    with transaction.atomic():
+        pesanan.kasir = request.user
+        pesanan.petugas_laundry = petugas
+        pesanan.status = (
+            Pesanan.StatusPesanan.MENUNGGU_ANTRIAN
+        )
+
+        pesanan.save(
+            update_fields=[
+                "kasir",
+                "petugas_laundry",
+                "status",
+                "updated_at",
+            ]
+        )
+
+        RiwayatStatus.objects.create(
+            pesanan=pesanan,
+            status_sebelumnya=status_sebelumnya,
+            status_baru=pesanan.status,
+            diubah_oleh=request.user,
+            catatan=(
+                "Pesanan diterima oleh kasir dan "
+                "ditugaskan kepada petugas laundry."
+            ),
+        )
+
+    messages.success(
+        request,
+        (
+            "Pesanan berhasil diterima dan masuk "
+            f"ke tugas {petugas.get_full_name() or petugas.username}."
+        ),
+    )
+
+    return redirect(
+        "kasir:pesanan_detail",
+        pk=pesanan.pk,
+    )
+
+
+@require_POST
+@kasir_required
+def pesanan_tolak(request, pk):
+    pesanan = get_object_or_404(Pesanan, pk=pk)
+
+    pesanan.kasir = request.user
+    pesanan.status = Pesanan.StatusPesanan.DITOLAK
+    pesanan.save()
+
+    messages.success(request, "Pesanan berhasil ditolak.")
+
+    return redirect(
+        "kasir:pesanan_detail",
+        pk=pesanan.pk,
     )

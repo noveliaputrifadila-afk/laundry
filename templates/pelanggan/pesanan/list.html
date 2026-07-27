@@ -7,19 +7,13 @@
 {% block content %}
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div>
-        <h2 class="fw-bold mb-1">
-            Pesanan Saya
-        </h2>
-
+        <h2 class="fw-bold mb-1">Pesanan Saya</h2>
         <p class="text-muted mb-0">
             Lihat seluruh riwayat dan perkembangan pesanan laundry Anda.
         </p>
     </div>
 
-    <a
-        href="{% url 'pelanggan:pesanan_tambah' %}"
-        class="btn btn-primary"
-    >
+    <a href="{% url 'pelanggan:pesanan_tambah' %}" class="btn btn-primary">
         <i class="bi bi-plus-circle me-1"></i>
         Buat Pesanan
     </a>
@@ -30,13 +24,7 @@
         <form method="get">
             <div class="row g-3 align-items-end">
                 <div class="col-lg-6">
-                    <label
-                        for="q"
-                        class="form-label"
-                    >
-                        Pencarian
-                    </label>
-
+                    <label for="q" class="form-label">Pencarian</label>
                     <input
                         type="text"
                         id="q"
@@ -48,28 +36,13 @@
                 </div>
 
                 <div class="col-lg-3">
-                    <label
-                        for="status"
-                        class="form-label"
-                    >
-                        Status
-                    </label>
-
-                    <select
-                        id="status"
-                        name="status"
-                        class="form-select"
-                    >
-                        <option value="">
-                            Semua status
-                        </option>
-
+                    <label for="status" class="form-label">Status</label>
+                    <select id="status" name="status" class="form-select">
+                        <option value="">Semua status</option>
                         {% for value, label in status_choices %}
                             <option
                                 value="{{ value }}"
-                                {% if status_dipilih == value %}
-                                    selected
-                                {% endif %}
+                                {% if status_dipilih == value %}selected{% endif %}
                             >
                                 {{ label }}
                             </option>
@@ -79,10 +52,7 @@
 
                 <div class="col-lg-3">
                     <div class="d-flex gap-2">
-                        <button
-                            type="submit"
-                            class="btn btn-primary flex-grow-1"
-                        >
+                        <button type="submit" class="btn btn-primary flex-grow-1">
                             <i class="bi bi-search me-1"></i>
                             Cari
                         </button>
@@ -104,10 +74,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white py-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0">
-                Daftar Pesanan
-            </h5>
-
+            <h5 class="fw-bold mb-0">Daftar Pesanan</h5>
             <span class="badge text-bg-primary">
                 {{ page_obj.paginator.count }} pesanan
             </span>
@@ -131,25 +98,14 @@
             <tbody>
                 {% for pesanan in page_obj %}
                     <tr>
-                        <td>
-                            <strong>
-                                {{ pesanan.kode_pesanan }}
-                            </strong>
-                        </td>
+                        <td><strong>{{ pesanan.kode_pesanan }}</strong></td>
+                        <td>{{ pesanan.created_at|date:"d M Y H:i" }}</td>
 
                         <td>
-                            {{ pesanan.created_at|date:"d M Y H:i" }}
-                        </td>
-
-                        <td>
-                            {% for detail in pesanan.detail_pesanan.all|slice:":2" %}
-                                <div>
-                                    {{ detail.layanan.nama }}
-                                </div>
+                            {% for detail in pesanan.detail.all|slice:":2" %}
+                                <div>{{ detail.layanan.nama }}</div>
                             {% empty %}
-                                <span class="text-muted">
-                                    Tidak ada detail
-                                </span>
+                                <span class="text-muted">Tidak ada detail</span>
                             {% endfor %}
                         </td>
 
@@ -190,38 +146,45 @@
                         </td>
 
                         <td>
-                            <strong>
-                                Rp {{ pesanan.total_biaya|floatformat:0 }}
-                            </strong>
+                            <strong>Rp {{ pesanan.total_biaya|floatformat:0 }}</strong>
                         </td>
 
                         <td class="text-center">
-                            <a
-                                href="#"
-                                class="btn btn-sm btn-outline-primary"
-                                title="Lihat detail"
-                            >
-                                <i class="bi bi-eye"></i>
-                            </a>
+                            {% if pesanan.status == "selesai" %}
+                                {% if pesanan.rating_ulasan %}
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-success"
+                                        title="Rating sudah diberikan"
+                                        disabled
+                                    >
+                                        <i class="bi bi-star-fill me-1"></i>
+                                        Sudah Dinilai
+                                    </button>
+                                {% else %}
+                                    <a
+                                        href="{% url 'pelanggan:beri_rating' pesanan.pk %}"
+                                        class="btn btn-sm btn-warning"
+                                        title="Beri rating dan ulasan"
+                                    >
+                                        <i class="bi bi-star-fill me-1"></i>
+                                        Beri Rating
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted small">
+                                    Rating tersedia setelah pesanan selesai
+                                </span>
+                            {% endif %}
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td
-                            colspan="7"
-                            class="text-center py-5"
-                        >
+                        <td colspan="7" class="text-center py-5">
                             <div class="text-muted">
                                 <i class="bi bi-bag-x fs-1 d-block mb-3"></i>
-
-                                <h6 class="fw-bold">
-                                    Belum ada pesanan
-                                </h6>
-
-                                <p class="mb-3">
-                                    Buat pesanan laundry pertama Anda.
-                                </p>
-
+                                <h6 class="fw-bold">Belum ada pesanan</h6>
+                                <p class="mb-3">Buat pesanan laundry pertama Anda.</p>
                                 <a
                                     href="{% url 'pelanggan:pesanan_tambah' %}"
                                     class="btn btn-primary btn-sm"
@@ -238,30 +201,28 @@
 
     {% if page_obj.has_other_pages %}
         <div class="card-footer bg-white">
-            <nav>
+            <nav aria-label="Navigasi halaman pesanan">
                 <ul class="pagination justify-content-center mb-0">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
                             <a
                                 class="page-link"
-                                href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&status={{ status_dipilih }}"
+                                href="?page={{ page_obj.previous_page_number }}&q={{ keyword|urlencode }}&status={{ status_dipilih|urlencode }}"
                             >
                                 Sebelumnya
                             </a>
                         </li>
                     {% endif %}
 
-                    <li class="page-item active">
-                        <span class="page-link">
-                            {{ page_obj.number }}
-                        </span>
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ page_obj.number }}</span>
                     </li>
 
                     {% if page_obj.has_next %}
                         <li class="page-item">
                             <a
                                 class="page-link"
-                                href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&status={{ status_dipilih }}"
+                                href="?page={{ page_obj.next_page_number }}&q={{ keyword|urlencode }}&status={{ status_dipilih|urlencode }}"
                             >
                                 Berikutnya
                             </a>

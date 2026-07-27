@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}
+Riwayat Status Pesanan
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Riwayat Status Pesanan</h2>
+            <p class="text-muted mb-0">
+                Menampilkan seluruh perubahan status pesanan laundry.
+            </p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+
+            <form method="get" class="row g-3 mb-4">
+                <div class="col-md-5">
+                    <label class="form-label">
+                        Pencarian
+                    </label>
+
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ keyword }}"
+                        class="form-control"
+                        placeholder="Cari kode pesanan, pelanggan, atau status"
+                    >
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">
+                        Status
+                    </label>
+
+                    <select name="status" class="form-select">
+                        <option value="">
+                            Semua Status
+                        </option>
+
+                        {% for value, label in status_choices %}
+                            <option
+                                value="{{ value }}"
+                                {% if status_filter == value %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end gap-2">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        <i class="bi bi-search"></i>
+                        Cari
+                    </button>
+
+                    <a
+                        href="{% url 'administrator:riwayat_status_list' %}"
+                        class="btn btn-outline-secondary"
+                    >
+                        Reset
+                    </a>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>No.</th>
+                            <th>Kode Pesanan</th>
+                            <th>Pelanggan</th>
+                            <th>Status Sebelumnya</th>
+                            <th>Status Baru</th>
+                            <th>Diubah Oleh</th>
+                            <th>Catatan</th>
+                            <th>Waktu</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for riwayat in page_obj %}
+                            <tr>
+                                <td>
+                                    {{ page_obj.start_index|add:forloop.counter0 }}
+                                </td>
+
+                                <td>
+                                    <strong>
+                                        {{ riwayat.pesanan.kode_pesanan }}
+                                    </strong>
+                                </td>
+
+                                <td>
+                                    {{ riwayat.pesanan.pelanggan.get_full_name|default:riwayat.pesanan.pelanggan.username }}
+                                </td>
+
+                                <td>
+                                    {% if riwayat.status_sebelumnya %}
+                                        <span class="badge bg-secondary">
+                                            {{ riwayat.get_status_sebelumnya_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-primary">
+                                        {{ riwayat.get_status_baru_display }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    {% if riwayat.diubah_oleh %}
+                                        {{ riwayat.diubah_oleh.get_full_name|default:riwayat.diubah_oleh.username }}
+                                    {% else %}
+                                        <span class="text-muted">
+                                            Sistem
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    {{ riwayat.catatan|default:"-" }}
+                                </td>
+
+                                <td>
+                                    {{ riwayat.created_at|date:"d M Y H:i" }}
+                                </td>
+                            </tr>
+
+                        {% empty %}
+                            <tr>
+                                <td
+                                    colspan="8"
+                                    class="text-center py-5 text-muted"
+                                >
+                                    Belum ada riwayat perubahan status.
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+                <nav class="mt-4">
+                    <ul class="pagination justify-content-center">
+
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a
+                                    class="page-link"
+                                    href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&status={{ status_filter }}"
+                                >
+                                    Sebelumnya
+                                </a>
+                            </li>
+                        {% endif %}
+
+                        <li class="page-item active">
+                            <span class="page-link">
+                                {{ page_obj.number }}
+                                dari
+                                {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a
+                                    class="page-link"
+                                    href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&status={{ status_filter }}"
+                                >
+                                    Berikutnya
+                                </a>
+                            </li>
+                        {% endif %}
+
+                    </ul>
+                </nav>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+{% endblock %}

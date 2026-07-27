@@ -96,15 +96,39 @@
             </a>
         {% endif %}
         {% if pesanan.status == "menunggu_konfirmasi" %}
-            <button class="btn btn-success">
-                <i class="bi bi-check-circle me-1"></i>
-                Terima Pesanan
-            </button>
+            <form
+                method="post"
+                action="{% url 'kasir:pesanan_terima' pesanan.pk %}"
+                class="d-inline"
+                onsubmit="return confirm('Terima pesanan ini dan tugaskan kepada petugas laundry?');"
+            >
+                {% csrf_token %}
 
-            <button class="btn btn-outline-danger">
-                <i class="bi bi-x-circle me-1"></i>
-                Tolak
-            </button>
+                <button
+                    type="submit"
+                    class="btn btn-success"
+                >
+                    <i class="bi bi-check-circle me-1"></i>
+                    Terima Pesanan
+                </button>
+            </form>
+
+            <form
+                method="post"
+                action="{% url 'kasir:pesanan_tolak' pesanan.pk %}"
+                class="d-inline"
+                onsubmit="return confirm('Yakin ingin menolak pesanan ini?');"
+            >
+                {% csrf_token %}
+
+                <button
+                    type="submit"
+                    class="btn btn-outline-danger"
+                >
+                    <i class="bi bi-x-circle me-1"></i>
+                    Tolak
+                </button>
+            </form>
         {% endif %}
     </div>
 </div>

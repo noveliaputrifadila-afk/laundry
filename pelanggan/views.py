@@ -1,24 +1,26 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.core.paginator import Paginator
 from django.db import transaction
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
 from administrator.decorators import role_required
 from administrator.models import (
-    Pembayaran,
-    Pesanan,
-    User,
     Invoice,
     Notifikasi,
+    Pembayaran,
+    Pesanan,
+    RatingUlasan,
+    User,
 )
-from django.utils import timezone
-from django.contrib import messages
-from django.shortcuts import redirect
-from django.core.paginator import Paginator
-from django.db.models import Q
 
 from .forms import (
     DetailPesananFormSet,
     PembayaranPelangganForm,
     PesananPelangganForm,
 )
+from .forms_rating import RatingUlasanForm
 
 
 @role_required([User.Role.PELANGGAN])
@@ -124,16 +126,14 @@ def pesanan_tambah(request):
 
                 Notifikasi.objects.create(
                     penerima=request.user,
-                    pesanan=pesanan,
                     jenis=Notifikasi.JenisNotifikasi.PESANAN,
                     judul="Pesanan berhasil dibuat",
                     pesan=(
                         f"Pesanan {pesanan.kode_pesanan} berhasil dibuat "
                         "dan sedang menunggu konfirmasi kasir."
                     ),
-                    url=(
-                        "/pelanggan/pesanan/lacak/"
-                        f"?q={pesanan.kode_pesanan}"
+                    link=(
+                        f"/pelanggan/pesanan/lacak/?q={pesanan.kode_pesanan}"
                     ),
                 )
 
@@ -573,4 +573,62 @@ def notifikasi_baca_semua(request):
 
     return redirect(
         "pelanggan:notifikasi_list"
+    )
+
+
+@role_required([User.Role.PELANGGAN])
+def beri_rating(request, pk):
+    pesanan = get_object_or_404(
+        Pesanan,
+        pk=pk,
+        pelanggan=request.user,
+        status=Pesanan.StatusPesanan.SELESAI,
+    )
+
+    rating = RatingUlasan.objects.filter(
+        pesanan=pesanan
+    ).first()
+
+    if rating:
+        messages.info(
+            request,
+            "Anda sudah memberikan rating untuk pesanan ini."
+        )
+        return redirect(
+            "pelanggan:pesanan_saya"
+        )
+
+    if request.method == "POST":
+        form = RatingUlasanForm(
+            request.POST
+        )
+
+        if form.is_valid():
+            rating = form.save(
+                commit=False
+            )
+            rating.pesanan = pesanan
+            rating.pelanggan = request.user
+            rating.save()
+
+            messages.success(
+                request,
+                "Terima kasih atas rating Anda."
+            )
+
+            return redirect(
+                "pelanggan:pesanan_saya"
+            )
+    else:
+        form = RatingUlasanForm()
+
+    context = {
+        "pesanan": pesanan,
+        "form": form,
+    }
+
+    return render(
+        request,
+        "pelanggan/rating_form.html",
+        context,
     )

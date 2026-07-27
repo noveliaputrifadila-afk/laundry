@@ -26,10 +26,15 @@ urlpatterns = [
     ),
 
     path(
-    "pesanan/lacak/",
-    views.lacak_laundry,
-    name="lacak_laundry",
-),
+        "pesanan/<int:pk>/rating/",
+        views.beri_rating,
+        name="beri_rating",
+    ),
+    path(
+        "pesanan/lacak/",
+        views.lacak_laundry,
+        name="lacak_laundry",
+    ),
 
 path(
     "pembayaran/",

@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .decorators import administrator_required
-from .models import Notifikasi, Pesanan, User
+from .models import Notifikasi, Pesanan, User, RiwayatStatus
 
 
 def get_petugas_laundry_queryset():
@@ -41,7 +41,7 @@ def penugasan_list(request):
             "kasir",
         )
         .prefetch_related(
-            "detail_pesanan",
+            "detail",
         )
         .order_by("-created_at")
     )
@@ -52,7 +52,7 @@ def penugasan_list(request):
             | Q(pelanggan__username__icontains=query)
             | Q(pelanggan__first_name__icontains=query)
             | Q(pelanggan__last_name__icontains=query)
-            | Q(pelanggan__no_hp__icontains=query)
+            | Q(pelanggan__nomor_hp__icontains=query)
         )
 
     if status_penugasan == "belum_ditugaskan":
@@ -105,7 +105,7 @@ def penugasan_detail(request, pk):
             "petugas_laundry",
             "kasir",
         ).prefetch_related(
-            "detail_pesanan",
+            "detail",
             "riwayat_status",
         ),
         pk=pk,
@@ -177,26 +177,25 @@ def penugasan_assign(request, pk):
 
         Notifikasi.objects.create(
             penerima=petugas,
-            pesanan=pesanan,
-            jenis=Notifikasi.JenisNotifikasi.PESANAN,
+            jenis=Notifikasi.JenisNotifikasi.PENUGASAN,
             judul="Tugas laundry baru",
             pesan=(
-                f"Anda ditugaskan menangani pesanan "
+                f"Anda mendapatkan tugas untuk pesanan "
                 f"{pesanan.kode_pesanan}."
             ),
-            url=f"/petugas/pesanan/{pesanan.pk}/",
+            link=f"/petugas/tugas/{pesanan.pk}/",
         )
 
         if petugas_lama and petugas_lama.pk != petugas.pk:
             Notifikasi.objects.create(
                 penerima=petugas_lama,
-                pesanan=pesanan,
-                jenis=Notifikasi.JenisNotifikasi.PESANAN,
+                jenis=Notifikasi.JenisNotifikasi.PENUGASAN,
                 judul="Penugasan dialihkan",
                 pesan=(
                     f"Pesanan {pesanan.kode_pesanan} telah "
                     f"dialihkan kepada petugas lain."
                 ),
+                link="/petugas/tugas/",
             )
 
     if petugas_lama:

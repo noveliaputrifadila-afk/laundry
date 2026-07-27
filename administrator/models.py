@@ -1274,3 +1274,65 @@ class Notifikasi(models.Model):
 
     def __str__(self):
         return f"{self.penerima.username} - {self.judul}"
+
+
+class RatingUlasan(models.Model):
+    class NilaiRating(models.IntegerChoices):
+        SATU = 1, "1 Bintang"
+        DUA = 2, "2 Bintang"
+        TIGA = 3, "3 Bintang"
+        EMPAT = 4, "4 Bintang"
+        LIMA = 5, "5 Bintang"
+
+    pesanan = models.OneToOneField(
+        Pesanan,
+        on_delete=models.CASCADE,
+        related_name="rating_ulasan",
+        verbose_name="Pesanan",
+    )
+
+    pelanggan = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="rating_ulasan",
+        verbose_name="Pelanggan",
+    )
+
+    nilai = models.PositiveSmallIntegerField(
+        choices=NilaiRating.choices,
+        verbose_name="Rating",
+    )
+
+    ulasan = models.TextField(
+        blank=True,
+        verbose_name="Ulasan",
+    )
+
+    balasan_admin = models.TextField(
+        blank=True,
+        verbose_name="Balasan Administrator",
+    )
+
+    is_tampil = models.BooleanField(
+        default=True,
+        verbose_name="Tampilkan Ulasan",
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Rating dan Ulasan"
+        verbose_name_plural = "Rating dan Ulasan"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return (
+            f"{self.pesanan.kode_pesanan} - "
+            f"{self.nilai} Bintang"
+        )
