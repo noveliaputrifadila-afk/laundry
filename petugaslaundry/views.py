@@ -339,7 +339,7 @@ def update_status(request, pk):
 
     RiwayatStatus.objects.create(
         pesanan=pesanan,
-        status_lama=status_lama,
+        status_sebelumnya=status_lama,
         status_baru=status_baru,
         diubah_oleh=request.user,
     )

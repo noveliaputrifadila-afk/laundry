@@ -4,8 +4,10 @@ from django.forms import BaseInlineFormSet, inlineformset_factory
 from administrator.models import (
     AreaLayanan,
     DetailPesanan,
+    
     Layanan,
     MetodePembayaran,
+    
     Pesanan,
     Promo,
     User,
@@ -288,8 +290,89 @@ DetailPesananFormSet = inlineformset_factory(
     model=DetailPesanan,
     form=DetailPesananForm,
     formset=BaseDetailPesananFormSet,
-    extra=1,
+    extra=0,
     can_delete=True,
     min_num=1,
     validate_min=True,
 )
+
+class PemeriksaanDetailForm(forms.ModelForm):
+    class Meta:
+        model = DetailPesanan
+
+        fields = [
+            "berat_aktual",
+            "harga_final",
+            "catatan",
+        ]
+
+        widgets = {
+            "berat_aktual": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0.01",
+                    "step": "0.01",
+                    "placeholder": "Contoh: 3.50",
+                }
+            ),
+            "harga_final": forms.NumberInput(
+                attrs={
+                    "class": "form-control",
+                    "min": "0",
+                    "step": "100",
+                    "placeholder": "Contoh: 8000",
+                }
+            ),
+            "catatan": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 2,
+                    "placeholder": "Catatan hasil pemeriksaan, bila ada",
+                }
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["catatan"].required = False
+
+        # Berat hanya wajib untuk layanan berbasis kilogram.
+        if (
+            self.instance
+            and self.instance.pk
+            and self.instance.layanan_id
+        ):
+            if (
+                self.instance.layanan.satuan
+                == Layanan.Satuan.KILOGRAM
+            ):
+                self.fields["berat_aktual"].required = True
+            else:
+                self.fields["berat_aktual"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        berat_aktual = cleaned_data.get("berat_aktual")
+        harga_final = cleaned_data.get("harga_final")
+
+        if harga_final is None:
+            self.add_error(
+                "harga_final",
+                "Harga final wajib diisi.",
+            )
+
+        if (
+            self.instance
+            and self.instance.layanan_id
+            and self.instance.layanan.satuan
+            == Layanan.Satuan.KILOGRAM
+            and berat_aktual is None
+        ):
+            self.add_error(
+                "berat_aktual",
+                "Berat aktual wajib diisi untuk layanan kilogram.",
+            )
+
+        return cleaned_data

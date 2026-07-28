@@ -97,8 +97,8 @@ def dashboard(request):
         status=Pembayaran.StatusPembayaran.MENUNGGU,
     ).count()
 
-    pesanan_menunggu_konfirmasi = pesanan_queryset.filter(
-        status=Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI,
+    pesanan_menunggu_pemeriksaan = pesanan_queryset.filter(
+        status=Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
     ).count()
 
     pesanan_selesai_hari_ini = pesanan_queryset.filter(
@@ -208,8 +208,8 @@ def dashboard(request):
         "pendapatan_bulan_ini": pendapatan_bulan_ini,
         "belum_dibayar": belum_dibayar,
         "pembayaran_menunggu": pembayaran_menunggu,
-        "pesanan_menunggu_konfirmasi": (
-            pesanan_menunggu_konfirmasi
+        "pesanan_menunggu_pemeriksaan": (
+            pesanan_menunggu_pemeriksaan
         ),
         "pesanan_selesai_hari_ini": (
             pesanan_selesai_hari_ini
@@ -320,7 +320,7 @@ def pesanan_tolak(request, pk):
 
     if (
         pesanan.status
-        != Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI
+        != Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN
     ):
         messages.warning(
             request,

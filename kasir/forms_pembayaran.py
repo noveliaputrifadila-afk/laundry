@@ -18,7 +18,7 @@ class PembayaranKasirForm(forms.ModelForm):
             "metode_pembayaran",
             "jumlah",
             "tanggal_pembayaran",
-            "bukti_pembayaran",
+            
             "catatan",
         ]
         widgets = {

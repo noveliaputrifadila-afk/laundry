@@ -95,7 +95,7 @@
                 Buat Invoice
             </a>
         {% endif %}
-        {% if pesanan.status == "menunggu_konfirmasi" %}
+        {% if pesanan.status == "menunggu_pemeriksaan" %}
             <form
                 method="post"
                 action="{% url 'kasir:pesanan_terima' pesanan.pk %}"
@@ -281,6 +281,143 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+
+        <div class="card detail-card mt-4">
+            <div class="card-header">
+                <strong>Pemeriksaan Kasir</strong>
+            </div>
+
+            <div class="card-body">
+
+                {% for detail, form in form_pemeriksaan %}
+
+                <div class="border rounded p-3 mb-4">
+
+                    <h6 class="fw-bold">
+                        {{ detail.layanan.nama }}
+                    </h6>
+
+                    <div class="text-muted mb-3">
+                        {% if detail.jenis_barang %}
+                            {{ detail.jenis_barang.nama }}
+                        {% endif %}
+                    </div>
+
+                    <div class="card detail-card mt-4">
+                        <div class="card-header">
+                            <strong>Pemeriksaan Kasir</strong>
+                        </div>
+
+                        <div class="card-body">
+                            <form
+                                method="post"
+                                action="{% url 'kasir:pesanan_pemeriksaan' pesanan.pk %}"
+                            >
+                                {% csrf_token %}
+
+                                {% for detail, form in form_pemeriksaan %}
+                                    <div class="border rounded p-3 mb-4">
+                                        <h6 class="fw-bold mb-1">
+                                            {{ detail.layanan.nama }}
+                                        </h6>
+
+                                        <div class="text-muted mb-3">
+                                            {% if detail.jenis_barang %}
+                                                {{ detail.jenis_barang.nama }}
+                                            {% else %}
+                                                {{ detail.nama_barang }}
+                                            {% endif %}
+                                        </div>
+
+                                        {% if form.non_field_errors %}
+                                            <div class="alert alert-danger">
+                                                {{ form.non_field_errors }}
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="mb-3">
+                                            <label
+                                                for="{{ form.berat_aktual.id_for_label }}"
+                                                class="form-label"
+                                            >
+                                                Berat aktual
+                                            </label>
+
+                                            {{ form.berat_aktual }}
+
+                                            {% for error in form.berat_aktual.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {{ error }}
+                                                </div>
+                                            {% endfor %}
+
+                                            {% if form.berat_aktual.help_text %}
+                                                <div class="form-text">
+                                                    {{ form.berat_aktual.help_text }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label
+                                                for="{{ form.harga_final.id_for_label }}"
+                                                class="form-label"
+                                            >
+                                                Harga final
+                                            </label>
+
+                                            {{ form.harga_final }}
+
+                                            {% for error in form.harga_final.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {{ error }}
+                                                </div>
+                                            {% endfor %}
+
+                                            {% if form.harga_final.help_text %}
+                                                <div class="form-text">
+                                                    {{ form.harga_final.help_text }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label
+                                                for="{{ form.catatan.id_for_label }}"
+                                                class="form-label"
+                                            >
+                                                Catatan khusus
+                                            </label>
+
+                                            {{ form.catatan }}
+
+                                            {% for error in form.catatan.errors %}
+                                                <div class="text-danger small mt-1">
+                                                    {{ error }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary"
+                                >
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Simpan Pemeriksaan
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
             </div>
         </div>
 
@@ -471,6 +608,25 @@
                 </div>
             {% endif %}
             </div>
+
+            {% if pesanan.status == "siap_diambil" %}
+            <div class="d-grid mt-3">
+                <form
+                    method="post"
+                    action="{% url 'kasir:pesanan_selesai' pesanan.pk %}"
+                >
+                    {% csrf_token %}
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                        onclick="return confirm('Apakah barang sudah diterima pelanggan?')"
+                    >
+                        <i class="bi bi-check-circle-fill me-1"></i>
+                        Barang Sudah Diambil
+                    </button>
+                </form>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

@@ -213,7 +213,7 @@ def pesanan_konfirmasi(request, pk):
 
     if (
         pesanan.status
-        != Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI
+        != Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN
     ):
         messages.warning(
             request,
@@ -315,7 +315,7 @@ def pesanan_tolak(request, pk):
 
     if (
         pesanan.status
-        != Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI
+        != Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN
     ):
         messages.warning(
             request,

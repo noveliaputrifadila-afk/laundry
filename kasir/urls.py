@@ -7,6 +7,8 @@ from .views_pesanan import (
     pesanan_list,
     pesanan_terima,
     pesanan_tolak,
+    pesanan_pemeriksaan,
+    pesanan_selesai,
 )
 from .views_invoice import (
     invoice_batalkan,
@@ -66,6 +68,16 @@ urlpatterns = [
         "pesanan/<int:pk>/",
         pesanan_detail,
         name="pesanan_detail",
+    ),
+    path(
+        "pesanan/<int:pk>/pemeriksaan/",
+        pesanan_pemeriksaan,
+        name="pesanan_pemeriksaan",
+    ),
+    path(
+        "pesanan/<int:pk>/selesai/",
+        pesanan_selesai,
+        name="pesanan_selesai",
     ),
     path(
         "invoice/",

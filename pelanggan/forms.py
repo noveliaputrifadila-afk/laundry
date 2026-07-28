@@ -4,6 +4,7 @@ from django.utils import timezone
 from administrator.models import (
     AreaLayanan,
     DetailPesanan,
+    JenisBarang,
     Layanan,
     MetodePembayaran,
     Pesanan,
@@ -14,10 +15,30 @@ from administrator.models import (
 
 
 class PesananPelangganForm(forms.ModelForm):
+    setuju_ketentuan = forms.BooleanField(
+        required=True,
+        label=(
+            "Saya telah membaca ketentuan barang yang dapat "
+            "dan tidak dapat diterima oleh laundry."
+        ),
+        error_messages={
+            "required": (
+                "Anda wajib menyetujui ketentuan laundry "
+                "sebelum membuat pesanan."
+            ),
+        },
+        widget=forms.CheckboxInput(
+            attrs={
+                "class": "form-check-input",
+            }
+        ),
+    )
+
     class Meta:
         model = Pesanan
         fields = [
-            "jenis_pengantaran",
+            "cara_barang_masuk",
+            "cara_barang_keluar",
             "area_layanan",
             "alamat_penjemputan",
             "alamat_pengantaran",
@@ -28,7 +49,12 @@ class PesananPelangganForm(forms.ModelForm):
         ]
 
         widgets = {
-            "jenis_pengantaran": forms.Select(
+            "cara_barang_masuk": forms.Select(
+                attrs={
+                    "class": "form-select",
+                }
+            ),
+            "cara_barang_keluar": forms.Select(
                 attrs={
                     "class": "form-select",
                 }
@@ -42,21 +68,26 @@ class PesananPelangganForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "rows": 3,
-                    "placeholder": "Masukkan alamat penjemputan",
+                    "placeholder": (
+                        "Masukkan alamat tempat barang dijemput"
+                    ),
                 }
             ),
             "alamat_pengantaran": forms.Textarea(
                 attrs={
                     "class": "form-control",
                     "rows": 3,
-                    "placeholder": "Masukkan alamat pengantaran",
+                    "placeholder": (
+                        "Masukkan alamat tujuan pengantaran"
+                    ),
                 }
             ),
             "tanggal_penjemputan": forms.DateTimeInput(
                 attrs={
                     "class": "form-control",
                     "type": "datetime-local",
-                }
+                },
+                format="%Y-%m-%dT%H:%M",
             ),
             "metode_pembayaran": forms.Select(
                 attrs={
@@ -72,7 +103,9 @@ class PesananPelangganForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "rows": 3,
-                    "placeholder": "Tambahkan catatan khusus jika ada",
+                    "placeholder": (
+                        "Contoh: terdapat noda pada bagian lengan"
+                    ),
                 }
             ),
         }
@@ -97,9 +130,11 @@ class PesananPelangganForm(forms.ModelForm):
         self.fields["area_layanan"].required = False
         self.fields["promo"].required = False
         self.fields["tanggal_penjemputan"].required = False
+        self.fields["alamat_penjemputan"].required = False
+        self.fields["alamat_pengantaran"].required = False
 
         self.fields["area_layanan"].empty_label = (
-            "Pilih area antar-jemput"
+            "Pilih area layanan"
         )
         self.fields["metode_pembayaran"].empty_label = (
             "Pilih metode pembayaran"
@@ -108,12 +143,34 @@ class PesananPelangganForm(forms.ModelForm):
             "Tidak menggunakan promo"
         )
 
+        self.fields["cara_barang_masuk"].choices = [
+            (
+                "",
+                "Pilih cara barang masuk",
+            ),
+            *Pesanan.CaraBarangMasuk.choices,
+        ]
+
+        self.fields["cara_barang_keluar"].choices = [
+            (
+                "",
+                "Pilih cara barang dikembalikan",
+            ),
+            *Pesanan.CaraBarangKeluar.choices,
+        ]
+
+        if self.instance and self.instance.tanggal_penjemputan:
+            self.initial["tanggal_penjemputan"] = (
+                self.instance.tanggal_penjemputan.strftime(
+                    "%Y-%m-%dT%H:%M"
+                )
+            )
+
     def clean(self):
         cleaned_data = super().clean()
 
-        jenis_pengantaran = cleaned_data.get(
-            "jenis_pengantaran"
-        )
+        cara_masuk = cleaned_data.get("cara_barang_masuk")
+        cara_keluar = cleaned_data.get("cara_barang_keluar")
         area_layanan = cleaned_data.get("area_layanan")
         alamat_penjemputan = cleaned_data.get(
             "alamat_penjemputan"
@@ -125,48 +182,37 @@ class PesananPelangganForm(forms.ModelForm):
             "tanggal_penjemputan"
         )
 
-        jenis_memerlukan_jemput = [
-            Pesanan.JenisPengantaran.JEMPUT,
-            Pesanan.JenisPengantaran.ANTAR_JEMPUT,
-        ]
+        membutuhkan_penjemputan = (
+            cara_masuk
+            == Pesanan.CaraBarangMasuk.DIJEMPUT
+        )
 
-        jenis_memerlukan_antar = [
-            Pesanan.JenisPengantaran.ANTAR,
-            Pesanan.JenisPengantaran.ANTAR_JEMPUT,
-        ]
-
-        jenis_memerlukan_area = [
-            Pesanan.JenisPengantaran.JEMPUT,
-            Pesanan.JenisPengantaran.ANTAR,
-            Pesanan.JenisPengantaran.ANTAR_JEMPUT,
-        ]
+        membutuhkan_pengantaran = (
+            cara_keluar
+            == Pesanan.CaraBarangKeluar.DIANTAR_KE_PELANGGAN
+        )
 
         if (
-            jenis_pengantaran in jenis_memerlukan_area
-            and not area_layanan
-        ):
+            membutuhkan_penjemputan
+            or membutuhkan_pengantaran
+        ) and not area_layanan:
             self.add_error(
                 "area_layanan",
                 "Area layanan wajib dipilih.",
             )
 
-        if (
-            jenis_pengantaran in jenis_memerlukan_jemput
-            and not alamat_penjemputan
-        ):
-            self.add_error(
-                "alamat_penjemputan",
-                "Alamat penjemputan wajib diisi.",
-            )
+        if membutuhkan_penjemputan:
+            if not alamat_penjemputan:
+                self.add_error(
+                    "alamat_penjemputan",
+                    "Alamat penjemputan wajib diisi.",
+                )
 
-        if (
-            jenis_pengantaran in jenis_memerlukan_jemput
-            and not tanggal_penjemputan
-        ):
-            self.add_error(
-                "tanggal_penjemputan",
-                "Tanggal penjemputan wajib diisi.",
-            )
+            if not tanggal_penjemputan:
+                self.add_error(
+                    "tanggal_penjemputan",
+                    "Tanggal penjemputan wajib diisi.",
+                )
 
         if (
             tanggal_penjemputan
@@ -178,7 +224,7 @@ class PesananPelangganForm(forms.ModelForm):
             )
 
         if (
-            jenis_pengantaran in jenis_memerlukan_antar
+            membutuhkan_pengantaran
             and not alamat_pengantaran
         ):
             self.add_error(
@@ -188,14 +234,13 @@ class PesananPelangganForm(forms.ModelForm):
 
         return cleaned_data
 
-
 class DetailPesananPelangganForm(forms.ModelForm):
     class Meta:
         model = DetailPesanan
         fields = [
             "layanan",
-            "nama_barang",
-            "jumlah",
+            "jenis_barang",
+            "jumlah_barang",
             "catatan",
         ]
 
@@ -205,20 +250,17 @@ class DetailPesananPelangganForm(forms.ModelForm):
                     "class": "form-select",
                 }
             ),
-            "nama_barang": forms.TextInput(
+            "jenis_barang": forms.Select(
                 attrs={
-                    "class": "form-control",
-                    "placeholder": (
-                        "Contoh: pakaian harian, sepatu, karpet"
-                    ),
+                    "class": "form-select",
                 }
             ),
-            "jumlah": forms.NumberInput(
+            "jumlah_barang": forms.NumberInput(
                 attrs={
                     "class": "form-control",
-                    "min": "0.01",
-                    "step": "0.01",
-                    "placeholder": "Masukkan berat atau jumlah",
+                    "min": "1",
+                    "step": "1",
+                    "placeholder": "Masukkan jumlah barang",
                 }
             ),
             "catatan": forms.Textarea(
@@ -226,7 +268,8 @@ class DetailPesananPelangganForm(forms.ModelForm):
                     "class": "form-control",
                     "rows": 3,
                     "placeholder": (
-                        "Contoh: jangan menggunakan pewangi"
+                        "Contoh: terdapat noda berat atau "
+                        "jangan menggunakan pewangi"
                     ),
                 }
             ),
@@ -244,8 +287,18 @@ class DetailPesananPelangganForm(forms.ModelForm):
             .distinct()
         )
 
+        self.fields["jenis_barang"].queryset = (
+            JenisBarang.objects.filter(
+                is_active=True,
+            ).order_by("nama")
+        )
+
         self.fields["layanan"].empty_label = (
             "Pilih layanan laundry"
+        )
+
+        self.fields["jenis_barang"].empty_label = (
+            "Pilih jenis barang"
         )
 
 DetailPesananFormSet = forms.inlineformset_factory(

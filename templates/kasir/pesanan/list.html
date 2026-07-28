@@ -122,16 +122,16 @@
             <div class="card-body d-flex justify-content-between gap-3">
                 <div>
                     <div class="summary-label">
-                        Menunggu Konfirmasi
+                        Menunggu Barang
                     </div>
 
                     <div class="summary-value">
-                        {{ menunggu_konfirmasi }}
+                        {{ menunggu_barang_diantar }}
                     </div>
                 </div>
 
                 <div class="summary-icon bg-warning-subtle text-warning">
-                    <i class="bi bi-hourglass-split"></i>
+                    <i class="bi bi-box-seam"></i>
                 </div>
             </div>
         </div>
@@ -142,36 +142,36 @@
             <div class="card-body d-flex justify-content-between gap-3">
                 <div>
                     <div class="summary-label">
-                        Belum Dibayar
+                        Menunggu Penjemputan
                     </div>
 
                     <div class="summary-value">
-                        {{ belum_dibayar }}
+                        {{ menunggu_penjemputan }}
+                    </div>
+                </div>
+
+                <div class="summary-icon bg-info-subtle text-info">
+                    <i class="bi bi-truck"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card summary-card">
+            <div class="card-body d-flex justify-content-between gap-3">
+                <div>
+                    <div class="summary-label">
+                        Perlu Diperiksa
+                    </div>
+
+                    <div class="summary-value">
+                        {{ menunggu_pemeriksaan }}
                     </div>
                 </div>
 
                 <div class="summary-icon bg-danger-subtle text-danger">
-                    <i class="bi bi-credit-card"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-6 col-xl-3">
-        <div class="card summary-card">
-            <div class="card-body d-flex justify-content-between gap-3">
-                <div>
-                    <div class="summary-label">
-                        Selesai
-                    </div>
-
-                    <div class="summary-value">
-                        {{ selesai }}
-                    </div>
-                </div>
-
-                <div class="summary-icon bg-success-subtle text-success">
-                    <i class="bi bi-check-circle"></i>
+                    <i class="bi bi-clipboard-check"></i>
                 </div>
             </div>
         </div>
@@ -256,21 +256,21 @@
 
                 <div class="col-md-4 col-lg-2">
                     <label class="form-label">
-                        Pengantaran
+                        Barang Masuk
                     </label>
 
                     <select
-                        name="jenis_pengantaran"
+                        name="cara_barang_masuk"
                         class="form-select"
                     >
                         <option value="">
-                            Semua jenis
+                            Semua cara
                         </option>
 
-                        {% for value, label in jenis_pengantaran_choices %}
+                        {% for value, label in cara_barang_masuk_choices %}
                             <option
                                 value="{{ value }}"
-                                {% if jenis_pengantaran_terpilih == value %}
+                                {% if cara_barang_masuk_terpilih == value %}
                                     selected
                                 {% endif %}
                             >
@@ -319,7 +319,7 @@
                     <th>Kode</th>
                     <th>Pelanggan</th>
                     <th>Layanan</th>
-                    <th>Pengantaran</th>
+                    <th>Barang Masuk</th>
                     <th>Status</th>
                     <th>Pembayaran</th>
                     <th>Total</th>
@@ -353,9 +353,21 @@
 
                         <td>
                             {% for detail in pesanan.detail.all|slice:":2" %}
-                                <small class="d-block">
-                                    {{ detail.layanan.nama }}
-                                </small>
+                                <div class="mb-1">
+                                    <small class="fw-semibold d-block">
+                                        {{ detail.layanan.nama }}
+                                    </small>
+
+                                    <small class="text-muted">
+                                        {% if detail.jenis_barang %}
+                                            {{ detail.jenis_barang.nama }}
+                                        {% else %}
+                                            Jenis barang belum tersedia
+                                        {% endif %}
+
+                                        · {{ detail.jumlah_barang }} item
+                                    </small>
+                                </div>
                             {% empty %}
                                 <span class="text-muted">-</span>
                             {% endfor %}
@@ -368,7 +380,7 @@
                         </td>
 
                         <td>
-                            {{ pesanan.get_jenis_pengantaran_display }}
+                            {{ pesanan.get_cara_barang_masuk_display }}
                         </td>
 
                         <td>
@@ -380,8 +392,18 @@
                                 <span class="badge bg-danger-subtle text-danger">
                                     {{ pesanan.get_status_display }}
                                 </span>
-                            {% elif pesanan.status == "menunggu_konfirmasi" %}
+                            {% elif pesanan.status == "menunggu_barang_diantar" %}
                                 <span class="badge bg-warning-subtle text-warning">
+                                    {{ pesanan.get_status_display }}
+                                </span>
+
+                            {% elif pesanan.status == "menunggu_penjemputan" %}
+                                <span class="badge bg-info-subtle text-info">
+                                    {{ pesanan.get_status_display }}
+                                </span>
+
+                            {% elif pesanan.status == "menunggu_pemeriksaan" %}
+                                <span class="badge bg-danger-subtle text-danger">
                                     {{ pesanan.get_status_display }}
                                 </span>
                             {% else %}
@@ -460,7 +482,7 @@
                         <li class="page-item">
                             <a
                                 class="page-link"
-                                href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&status={{ status_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&jenis_pengantaran={{ jenis_pengantaran_terpilih }}"
+                                href="?page={{ page_obj.previous_page_number }}&q={{ keyword }}&status={{ status_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&cara_barang_masuk={{ cara_barang_masuk_terpilih }}"
                             >
                                 Sebelumnya
                             </a>
@@ -478,7 +500,7 @@
                             <li class="page-item">
                                 <a
                                     class="page-link"
-                                    href="?page={{ nomor }}&q={{ keyword }}&status={{ status_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&jenis_pengantaran={{ jenis_pengantaran_terpilih }}"
+                                    href="?page={{ nomor }}&q={{ keyword }}&status={{ status_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&cara_barang_masuk={{ cara_barang_masuk_terpilih }}"
                                 >
                                     {{ nomor }}
                                 </a>
@@ -490,7 +512,7 @@
                         <li class="page-item">
                             <a
                                 class="page-link"
-                                href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&status={{ status_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&jenis_pengantaran={{ jenis_pengantaran_terpilih }}"
+                                href="?page={{ page_obj.next_page_number }}&q={{ keyword }}&status={{ status_terpilih }}&status_pembayaran={{ status_pembayaran_terpilih }}&cara_barang_masuk={{ cara_barang_masuk_terpilih }}"
                             >
                                 Selanjutnya
                             </a>

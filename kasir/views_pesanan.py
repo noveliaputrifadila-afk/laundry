@@ -1,24 +1,56 @@
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import (
     get_object_or_404,
     redirect,
     render,
 )
 
-from administrator.models import Pesanan, User, RiwayatStatus
-
+from administrator.models import Pesanan, User, RiwayatStatus, Notifikasi
+from django.contrib.auth.decorators import login_required
 from .decorators import kasir_required
 from decimal import Decimal
-
+from .forms_pesanan import PemeriksaanDetailForm
 from django.contrib import messages
 from django.db import transaction
 from django.views.decorators.http import require_POST
-
+from .forms_pesanan import PemeriksaanDetailForm
 from .forms_pesanan import (
     DetailPesananFormSet,
     PesananKasirForm,
 )
+
+
+
+@login_required
+def pesanan_selesai(request, pk):
+    pesanan = get_object_or_404(Pesanan, pk=pk)
+
+    if request.method == "POST":
+        status_lama = pesanan.status
+
+        pesanan.status = Pesanan.StatusPesanan.SELESAI
+        pesanan.diterima_pelanggan = True
+        pesanan.save()
+
+        RiwayatStatus.objects.create(
+            pesanan=pesanan,
+            status_sebelumnya=status_lama,
+            status_baru=Pesanan.StatusPesanan.SELESAI,
+            diubah_oleh=request.user,
+            catatan="Barang telah diterima pelanggan.",
+        )
+
+        Notifikasi.objects.create(
+            penerima=pesanan.pelanggan,
+            judul="Laundry Selesai",
+            pesan=f"Pesanan {pesanan.kode_pesanan} telah selesai.",
+            jenis=Notifikasi.JenisNotifikasi.STATUS,
+        )
+
+        messages.success(request, "Pesanan berhasil diselesaikan.")
+
+    return redirect("kasir:pesanan_detail", pk=pk)
 
 @kasir_required
 def pesanan_create(request):
@@ -161,9 +193,10 @@ def pesanan_create(request):
 @kasir_required
 def pesanan_list(request):
     """
-    Menampilkan daftar pesanan pada modul Kasir.
+    Menampilkan daftar pesanan pada modul kasir.
 
     Administrator dapat melihat seluruh pesanan.
+
     Kasir dapat melihat:
     - pesanan yang belum mempunyai kasir;
     - pesanan yang ditangani oleh dirinya sendiri.
@@ -184,14 +217,15 @@ def pesanan_list(request):
         .prefetch_related(
             "detail",
             "detail__layanan",
+            "detail__jenis_barang",
         )
         .order_by("-created_at")
     )
 
     if user.role == User.Role.KASIR:
         pesanan_queryset = pesanan_queryset.filter(
-            Q(kasir=user) |
-            Q(kasir__isnull=True)
+            Q(kasir=user)
+            | Q(kasir__isnull=True)
         )
 
     # ==========================================
@@ -207,7 +241,9 @@ def pesanan_list(request):
             | Q(pelanggan__last_name__icontains=keyword)
             | Q(pelanggan__nomor_hp__icontains=keyword)
             | Q(pelanggan__email__icontains=keyword)
-        )
+            | Q(detail__jenis_barang__nama__icontains=keyword)
+            | Q(detail__layanan__nama__icontains=keyword)
+        ).distinct()
 
     # ==========================================
     # FILTER STATUS PESANAN
@@ -233,16 +269,16 @@ def pesanan_list(request):
         )
 
     # ==========================================
-    # FILTER JENIS PENGANTARAN
+    # FILTER CARA BARANG MASUK
     # ==========================================
-    jenis_pengantaran = request.GET.get(
-        "jenis_pengantaran",
+    cara_barang_masuk = request.GET.get(
+        "cara_barang_masuk",
         "",
     ).strip()
 
-    if jenis_pengantaran:
+    if cara_barang_masuk:
         pesanan_queryset = pesanan_queryset.filter(
-            jenis_pengantaran=jenis_pengantaran,
+            cara_barang_masuk=cara_barang_masuk,
         )
 
     # ==========================================
@@ -250,8 +286,22 @@ def pesanan_list(request):
     # ==========================================
     total_pesanan = pesanan_queryset.count()
 
-    menunggu_konfirmasi = pesanan_queryset.filter(
-        status=Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI,
+    menunggu_barang_diantar = pesanan_queryset.filter(
+        status=(
+            Pesanan.StatusPesanan.MENUNGGU_BARANG_DIANTAR
+        ),
+    ).count()
+
+    menunggu_penjemputan = pesanan_queryset.filter(
+        status=(
+            Pesanan.StatusPesanan.MENUNGGU_PENJEMPUTAN
+        ),
+    ).count()
+
+    menunggu_pemeriksaan = pesanan_queryset.filter(
+        status=(
+            Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN
+        ),
     ).count()
 
     belum_dibayar = pesanan_queryset.filter(
@@ -281,19 +331,33 @@ def pesanan_list(request):
 
         "keyword": keyword,
         "status_terpilih": status,
-        "status_pembayaran_terpilih": status_pembayaran,
-        "jenis_pengantaran_terpilih": jenis_pengantaran,
+        "status_pembayaran_terpilih": (
+            status_pembayaran
+        ),
+        "cara_barang_masuk_terpilih": (
+            cara_barang_masuk
+        ),
 
-        "status_choices": Pesanan.StatusPesanan.choices,
+        "status_choices": (
+            Pesanan.StatusPesanan.choices
+        ),
         "status_pembayaran_choices": (
             Pesanan.StatusPembayaran.choices
         ),
-        "jenis_pengantaran_choices": (
-            Pesanan.JenisPengantaran.choices
+        "cara_barang_masuk_choices": (
+            Pesanan.CaraBarangMasuk.choices
         ),
 
         "total_pesanan": total_pesanan,
-        "menunggu_konfirmasi": menunggu_konfirmasi,
+        "menunggu_barang_diantar": (
+            menunggu_barang_diantar
+        ),
+        "menunggu_penjemputan": (
+            menunggu_penjemputan
+        ),
+        "menunggu_pemeriksaan": (
+            menunggu_pemeriksaan
+        ),
         "belum_dibayar": belum_dibayar,
         "selesai": selesai,
     }
@@ -303,7 +367,6 @@ def pesanan_list(request):
         "kasir/pesanan/list.html",
         context,
     )
-
 
 @kasir_required
 def pesanan_detail(request, pk):
@@ -349,8 +412,22 @@ def pesanan_detail(request, pk):
             status=403,
         )
 
+    form_pemeriksaan = []
+
+    for detail in pesanan.detail.all():
+        form_pemeriksaan.append(
+            (
+                detail,
+                PemeriksaanDetailForm(
+                    instance=detail,
+                    prefix=f"detail_{detail.id}",
+                ),
+            )
+        )
+
     context = {
         "pesanan": pesanan,
+        "form_pemeriksaan": form_pemeriksaan,
     }
 
     return render(
@@ -372,7 +449,7 @@ def pesanan_terima(request, pk):
 
     if (
         pesanan.status
-        != Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI
+        != Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN
     ):
         messages.warning(
             request,
@@ -464,3 +541,147 @@ def pesanan_tolak(request, pk):
         "kasir:pesanan_detail",
         pk=pesanan.pk,
     )
+
+@require_POST
+@transaction.atomic
+def pesanan_pemeriksaan(request, pk):
+    pesanan = get_object_or_404(
+        Pesanan.objects.prefetch_related(
+            "detail__layanan",
+            "detail__jenis_barang",
+        ),
+        pk=pk,
+    )
+
+    status_diperbolehkan = {
+        Pesanan.StatusPesanan.MENUNGGU_BARANG_DIANTAR,
+        Pesanan.StatusPesanan.MENUNGGU_PENJEMPUTAN,
+        Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
+    }
+
+    if pesanan.status not in status_diperbolehkan:
+        messages.error(
+            request,
+            "Pesanan ini tidak dapat diperiksa pada status sekarang.",
+        )
+        return redirect(
+            "kasir:pesanan_detail",
+            pk=pesanan.pk,
+        )
+
+    forms_pemeriksaan = []
+    semua_valid = True
+
+    for detail in pesanan.detail.all():
+        form = PemeriksaanDetailForm(
+            request.POST,
+            instance=detail,
+            prefix=f"detail_{detail.id}",
+        )
+
+        forms_pemeriksaan.append((detail, form))
+
+        if not form.is_valid():
+            semua_valid = False
+
+    if not semua_valid:
+        context = {
+            "pesanan": pesanan,
+            "form_pemeriksaan": forms_pemeriksaan,
+        }
+
+        return render(
+            request,
+            "kasir/pesanan/detail.html",
+            context,
+        )
+
+    for detail, form in forms_pemeriksaan:
+        form.save()
+
+    pesanan.hitung_total(simpan=False)
+
+    petugas = (
+        User.objects.filter(
+            role=User.Role.PETUGAS_LAUNDRY,
+            is_active=True,
+        )
+        .annotate(
+            jumlah_pekerjaan=Count(
+                "pesanan_dikerjakan",
+                filter=Q(
+                    pesanan_dikerjakan__status__in=[
+                        Pesanan.StatusPesanan.MENUNGGU_ANTRIAN,
+                        Pesanan.StatusPesanan.DICUCI,
+                        Pesanan.StatusPesanan.DIKERINGKAN,
+                        Pesanan.StatusPesanan.DISETRIKA,
+                        Pesanan.StatusPesanan.DILIPAT,
+                        Pesanan.StatusPesanan.DIKEMAS,
+                    ]
+                ),
+            )
+        )
+        .order_by(
+            "jumlah_pekerjaan",
+            "id",
+        )
+        .first()
+    )
+
+    status_lama = pesanan.status
+
+    pesanan.kasir = request.user
+    pesanan.petugas_laundry = petugas
+
+    if petugas:
+        pesanan.status = (
+            Pesanan.StatusPesanan.MENUNGGU_ANTRIAN
+        )
+    else:
+        pesanan.status = (
+            Pesanan.StatusPesanan.MENUNGGU_PETUGAS
+        )
+
+    pesanan.save(
+        update_fields=[
+            "kasir",
+            "petugas_laundry",
+            "status",
+            "subtotal",
+            "diskon",
+            "total_biaya",
+            "updated_at",
+        ]
+    )
+
+    RiwayatStatus.objects.create(
+        pesanan=pesanan,
+        status_sebelumnya=status_lama,
+        status_baru=pesanan.status,
+        diubah_oleh=request.user,
+        catatan="Pemeriksaan barang diselesaikan oleh kasir.",
+    )
+
+    if petugas:
+        messages.success(
+            request,
+            (
+                "Pemeriksaan berhasil disimpan. "
+                f"Pesanan ditugaskan kepada "
+                f"{petugas.get_full_name() or petugas.username}."
+            ),
+        )
+    else:
+        messages.warning(
+            request,
+            (
+                "Pemeriksaan berhasil disimpan, tetapi belum "
+                "ada petugas laundry yang tersedia."
+            ),
+        )
+
+    return redirect(
+        "kasir:pesanan_detail",
+        pk=pesanan.pk,
+    )
+

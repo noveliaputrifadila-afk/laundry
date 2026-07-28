@@ -104,7 +104,7 @@ def dashboard(request):
         petugas_laundry__isnull=True,
     ).exclude(
         status__in=[
-            Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI,
+            Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
             Pesanan.StatusPesanan.DITOLAK,
             Pesanan.StatusPesanan.DIBATALKAN,
             Pesanan.StatusPesanan.SELESAI,

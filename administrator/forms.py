@@ -1936,7 +1936,7 @@ class UbahStatusPesananForm(
     @staticmethod
     def get_status_choices(pesanan):
         alur_status = {
-            Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI: [
+            Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN: [
                 Pesanan.StatusPesanan.DITERIMA,
                 Pesanan.StatusPesanan.DITOLAK,
                 Pesanan.StatusPesanan.DIBATALKAN,

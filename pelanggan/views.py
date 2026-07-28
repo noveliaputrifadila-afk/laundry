@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -39,8 +41,10 @@ def dashboard(request):
     )
 
     status_aktif = [
-        Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI,
-        Pesanan.StatusPesanan.DITERIMA,
+        Pesanan.StatusPesanan.MENUNGGU_BARANG_DIANTAR,
+        Pesanan.StatusPesanan.MENUNGGU_PENJEMPUTAN,
+        Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
+        Pesanan.StatusPesanan.MENUNGGU_PETUGAS,
         Pesanan.StatusPesanan.MENUNGGU_ANTRIAN,
         Pesanan.StatusPesanan.DICUCI,
         Pesanan.StatusPesanan.DIKERINGKAN,
@@ -102,6 +106,57 @@ def pesanan_tambah(request):
             with transaction.atomic():
                 pesanan = form.save(commit=False)
                 pesanan.pelanggan = request.user
+
+                # Menentukan status awal.
+                if (
+                    pesanan.cara_barang_masuk
+                    == Pesanan.CaraBarangMasuk.DIJEMPUT
+                ):
+                    pesanan.status = (
+                        Pesanan.StatusPesanan
+                        .MENUNGGU_PENJEMPUTAN
+                    )
+                else:
+                    pesanan.status = (
+                        Pesanan.StatusPesanan
+                        .MENUNGGU_BARANG_DIANTAR
+                    )
+
+                # Sinkronisasi sementara dengan field lama
+                # agar template atau view lama tidak langsung rusak.
+                perlu_jemput = (
+                    pesanan.cara_barang_masuk
+                    == Pesanan.CaraBarangMasuk.DIJEMPUT
+                )
+                perlu_antar = (
+                    pesanan.cara_barang_keluar
+                    == Pesanan.CaraBarangKeluar
+                    .DIANTAR_KE_PELANGGAN
+                )
+
+                if perlu_jemput and perlu_antar:
+                    pesanan.jenis_pengantaran = (
+                        Pesanan.JenisPengantaran.ANTAR_JEMPUT
+                    )
+                elif perlu_jemput:
+                    pesanan.jenis_pengantaran = (
+                        Pesanan.JenisPengantaran.JEMPUT
+                    )
+                elif perlu_antar:
+                    pesanan.jenis_pengantaran = (
+                        Pesanan.JenisPengantaran.ANTAR
+                    )
+                else:
+                    pesanan.jenis_pengantaran = (
+                        Pesanan.JenisPengantaran.DATANG_SENDIRI
+                    )
+
+                # Biaya belum dihitung sebelum pemeriksaan kasir.
+                pesanan.subtotal = Decimal("0.00")
+                pesanan.diskon = Decimal("0.00")
+                pesanan.biaya_tambahan = Decimal("0.00")
+                pesanan.total_biaya = Decimal("0.00")
+
                 pesanan.save()
 
                 details = formset.save(commit=False)
@@ -109,42 +164,66 @@ def pesanan_tambah(request):
                 for detail in details:
                     detail.pesanan = pesanan
 
-                    tarif = detail.layanan.tarif_aktif
-
-                    if tarif:
-                        detail.harga_satuan = tarif.harga
-                    else:
-                        detail.harga_satuan = 0
-
+                    # Mengisi field lama sementara agar database
+                    # dan kode lama tetap kompatibel.
+                    detail.nama_barang = (
+                        detail.jenis_barang.nama
+                    )
+                    detail.jumlah = Decimal(
+                        detail.jumlah_barang
+                    )
                     detail.satuan = detail.layanan.satuan
+
+                    # Harga ditentukan kasir setelah pemeriksaan.
+                    detail.harga_satuan = Decimal("0.00")
+                    detail.harga_final = None
+                    detail.berat_aktual = None
+                    detail.subtotal = Decimal("0.00")
+
                     detail.save()
 
                 for detail in formset.deleted_objects:
                     detail.delete()
 
-                pesanan.hitung_total()
+                if (
+                    pesanan.status
+                    == Pesanan.StatusPesanan
+                    .MENUNGGU_PENJEMPUTAN
+                ):
+                    pesan_notifikasi = (
+                        f"Pesanan {pesanan.kode_pesanan} "
+                        "berhasil dibuat dan sedang menunggu "
+                        "penjemputan barang."
+                    )
+                else:
+                    pesan_notifikasi = (
+                        f"Pesanan {pesanan.kode_pesanan} "
+                        "berhasil dibuat. Silakan antarkan "
+                        "barang ke outlet untuk diperiksa "
+                        "dan ditimbang."
+                    )
 
                 Notifikasi.objects.create(
                     penerima=request.user,
                     jenis=Notifikasi.JenisNotifikasi.PESANAN,
                     judul="Pesanan berhasil dibuat",
-                    pesan=(
-                        f"Pesanan {pesanan.kode_pesanan} berhasil dibuat "
-                        "dan sedang menunggu konfirmasi kasir."
-                    ),
+                    pesan=pesan_notifikasi,
                     link=(
-                        f"/pelanggan/pesanan/lacak/?q={pesanan.kode_pesanan}"
+                        "/pelanggan/pesanan/lacak/"
+                        f"?q={pesanan.kode_pesanan}"
                     ),
                 )
 
             messages.success(
                 request,
-                "Pesanan laundry berhasil dibuat.",
+                (
+                    "Pesanan laundry berhasil dibuat. "
+                    "Harga final akan ditentukan setelah "
+                    "barang diperiksa dan ditimbang."
+                ),
             )
 
-            return redirect(
-                "pelanggan:dashboard"
-            )
+            return redirect("pelanggan:dashboard")
 
     else:
         form = PesananPelangganForm(
@@ -257,17 +336,19 @@ def lacak_laundry(request):
         ).distinct()
 
     progress_map = {
-        Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI: 10,
-        Pesanan.StatusPesanan.DITERIMA: 20,
-        Pesanan.StatusPesanan.MENUNGGU_ANTRIAN: 30,
-        Pesanan.StatusPesanan.DICUCI: 45,
-        Pesanan.StatusPesanan.DIKERINGKAN: 60,
-        Pesanan.StatusPesanan.DISETRIKA: 70,
-        Pesanan.StatusPesanan.DILIPAT: 78,
-        Pesanan.StatusPesanan.DIKEMAS: 85,
-        Pesanan.StatusPesanan.SIAP_DIAMBIL: 92,
-        Pesanan.StatusPesanan.SIAP_DIANTAR: 92,
-        Pesanan.StatusPesanan.DALAM_PENGANTARAN: 96,
+        Pesanan.StatusPesanan.MENUNGGU_BARANG_DIANTAR: 5,
+        Pesanan.StatusPesanan.MENUNGGU_PENJEMPUTAN: 10,
+        Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN: 20,
+        Pesanan.StatusPesanan.MENUNGGU_PETUGAS: 30,
+        Pesanan.StatusPesanan.MENUNGGU_ANTRIAN: 35,
+        Pesanan.StatusPesanan.DICUCI: 50,
+        Pesanan.StatusPesanan.DIKERINGKAN: 65,
+        Pesanan.StatusPesanan.DISETRIKA: 75,
+        Pesanan.StatusPesanan.DILIPAT: 82,
+        Pesanan.StatusPesanan.DIKEMAS: 88,
+        Pesanan.StatusPesanan.SIAP_DIAMBIL: 95,
+        Pesanan.StatusPesanan.SIAP_DIANTAR: 95,
+        Pesanan.StatusPesanan.DALAM_PENGANTARAN: 98,
         Pesanan.StatusPesanan.SELESAI: 100,
     }
 

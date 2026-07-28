@@ -63,10 +63,10 @@ class User(AbstractUser):
         verbose_name="Foto",
     )
     is_verified = models.BooleanField(
-        default=False,
+        default=True,
         db_index=True,
         verbose_name="Terverifikasi",
-        help_text="Pelanggan harus diverifikasi administrator sebelum dapat login.",
+        help_text="Akun pelanggan langsung aktif setelah registrasi.",
     )
     verified_at = models.DateTimeField(
         blank=True,
@@ -98,18 +98,17 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         """
-        Administrator, kasir, dan petugas laundry yang dibuat administrator
-        langsung dianggap terverifikasi.
+        Semua akun langsung dianggap terverifikasi.
 
-        Pelanggan tetap harus melalui proses verifikasi.
+        Administrator tetap disinkronkan dengan atribut is_staff
+        agar dapat mengakses Django Admin.
         """
-        if self.role != self.Role.PELANGGAN and not self.is_verified:
+        if not self.is_verified:
             self.is_verified = True
 
-            if self.verified_at is None:
-                self.verified_at = timezone.now()
+        if self.verified_at is None:
+            self.verified_at = timezone.now()
 
-        # Sinkronkan role administrator dengan atribut Django admin.
         if self.role == self.Role.ADMINISTRATOR:
             self.is_staff = True
 
@@ -237,6 +236,29 @@ class Layanan(TimeStampedModel):
     def tarif_aktif(self):
         return self.tarif_set.filter(is_active=True).order_by("-tanggal_mulai").first()
 
+
+class JenisBarang(TimeStampedModel):
+    nama = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Nama jenis barang",
+    )
+    deskripsi = models.TextField(
+        blank=True,
+        verbose_name="Deskripsi",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Aktif",
+    )
+
+    class Meta:
+        verbose_name = "Jenis Barang"
+        verbose_name_plural = "Jenis Barang"
+        ordering = ["nama"]
+
+    def __str__(self):
+        return self.nama
 
 class Tarif(models.Model):
     layanan = models.ForeignKey(
@@ -492,23 +514,64 @@ class Pesanan(TimeStampedModel):
         ANTAR = "antar", "Diantar"
         ANTAR_JEMPUT = "antar_jemput", "Antar dan Jemput"
 
-    class StatusPesanan(models.TextChoices):
-        MENUNGGU_KONFIRMASI = (
-            "menunggu_konfirmasi",
-            "Menunggu Konfirmasi Kasir",
+    class CaraBarangMasuk(models.TextChoices):
+        DIANTAR_KE_OUTLET = (
+            "diantar_ke_outlet",
+            "Diantar ke Outlet",
         )
-        DITERIMA = "diterima", "Diterima"
-        DITOLAK = "ditolak", "Ditolak"
-        MENUNGGU_ANTRIAN = "menunggu_antrian", "Menunggu Antrian"
+        DIJEMPUT = (
+            "dijemput",
+            "Dijemput ke Alamat Pelanggan",
+        )
+
+
+    class CaraBarangKeluar(models.TextChoices):
+        DIAMBIL_SENDIRI = (
+            "diambil_sendiri",
+            "Diambil Sendiri di Outlet",
+        )
+        DIANTAR_KE_PELANGGAN = (
+            "diantar_ke_pelanggan",
+            "Diantar ke Alamat Pelanggan",
+        )
+
+    class StatusPesanan(models.TextChoices):
+        MENUNGGU_BARANG_DIANTAR = (
+            "menunggu_barang_diantar",
+            "Menunggu Barang Diantar",
+        )
+        MENUNGGU_PENJEMPUTAN = (
+            "menunggu_penjemputan",
+            "Menunggu Penjemputan",
+        )
+        MENUNGGU_PEMERIKSAAN = (
+            "menunggu_pemeriksaan",
+            "Menunggu Pemeriksaan",
+        )
+        MENUNGGU_PETUGAS = (
+            "menunggu_petugas",
+            "Menunggu Petugas Tersedia",
+        )
+        MENUNGGU_ANTRIAN = (
+            "menunggu_antrian",
+            "Menunggu Antrian",
+        )
+
         DICUCI = "dicuci", "Dicuci"
         DIKERINGKAN = "dikeringkan", "Dikeringkan"
         DISETRIKA = "disetrika", "Disetrika"
         DILIPAT = "dilipat", "Dilipat"
         DIKEMAS = "dikemas", "Dikemas"
+
         SIAP_DIAMBIL = "siap_diambil", "Siap Diambil"
         SIAP_DIANTAR = "siap_diantar", "Siap Diantar"
-        DALAM_PENGANTARAN = "dalam_pengantaran", "Dalam Pengantaran"
+        DALAM_PENGANTARAN = (
+            "dalam_pengantaran",
+            "Dalam Pengantaran",
+        )
+
         SELESAI = "selesai", "Selesai"
+        DITOLAK = "ditolak", "Ditolak"
         DIBATALKAN = "dibatalkan", "Dibatalkan"
 
     class StatusPembayaran(models.TextChoices):
@@ -582,6 +645,21 @@ class Pesanan(TimeStampedModel):
         default=JenisPengantaran.DATANG_SENDIRI,
         verbose_name="Metode penerimaan",
     )
+    cara_barang_masuk = models.CharField(
+        max_length=30,
+        choices=CaraBarangMasuk.choices,
+        default=CaraBarangMasuk.DIANTAR_KE_OUTLET,
+        db_index=True,
+        verbose_name="Cara barang masuk",
+    )
+
+    cara_barang_keluar = models.CharField(
+        max_length=30,
+        choices=CaraBarangKeluar.choices,
+        default=CaraBarangKeluar.DIAMBIL_SENDIRI,
+        db_index=True,
+        verbose_name="Cara barang dikembalikan",
+    )
     alamat_penjemputan = models.TextField(
         blank=True,
         verbose_name="Alamat penjemputan",
@@ -625,7 +703,7 @@ class Pesanan(TimeStampedModel):
     status = models.CharField(
         max_length=30,
         choices=StatusPesanan.choices,
-        default=StatusPesanan.MENUNGGU_KONFIRMASI,
+        default=StatusPesanan.MENUNGGU_BARANG_DIANTAR,
         db_index=True,
         verbose_name="Status pesanan",
     )
@@ -689,6 +767,7 @@ class Pesanan(TimeStampedModel):
 
     def __str__(self):
         return f"{self.kode_pesanan} - {self.pelanggan.username}"
+
 
     def save(self, *args, **kwargs):
         if not self.kode_pesanan:
@@ -787,6 +866,40 @@ class DetailPesanan(TimeStampedModel):
         related_name="detail_pesanan",
         verbose_name="Layanan",
     )
+    jenis_barang = models.ForeignKey(
+        JenisBarang,
+        on_delete=models.PROTECT,
+        related_name="detail_pesanan",
+        blank=True,
+        null=True,
+        verbose_name="Jenis barang",
+    )
+    jumlah_barang = models.PositiveIntegerField(
+        default=1,
+        validators=[MinValueValidator(1)],
+        verbose_name="Jumlah barang",
+        help_text="Jumlah item yang diisi pelanggan saat membuat pesanan.",
+    )
+
+    berat_aktual = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.01"))],
+        verbose_name="Berat aktual",
+        help_text="Berat hasil penimbangan oleh kasir dalam kilogram.",
+    )
+
+    harga_final = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        blank=True,
+        null=True,
+        validators=[MinValueValidator(Decimal("0.00"))],
+        verbose_name="Harga final",
+        help_text="Harga akhir yang ditentukan kasir setelah pemeriksaan.",
+    )
     nama_barang = models.CharField(
         max_length=150,
         verbose_name="Nama/detail barang",
@@ -826,10 +939,36 @@ class DetailPesanan(TimeStampedModel):
         ordering = ["id"]
 
     def __str__(self):
-        return f"{self.pesanan.kode_pesanan} - {self.nama_barang}"
+        nama = (
+            self.jenis_barang.nama
+            if self.jenis_barang
+            else self.nama_barang
+        )
+
+        return f"{self.pesanan.kode_pesanan} - {nama}"
 
     def save(self, *args, **kwargs):
-        self.subtotal = self.jumlah * self.harga_satuan
+        """
+        Menghitung subtotal berdasarkan hasil pemeriksaan kasir.
+
+        Data lama tetap memakai jumlah dan harga_satuan.
+        Data baru memakai berat_aktual atau jumlah_barang.
+        """
+        if self.harga_final is not None:
+            self.harga_satuan = self.harga_final
+
+            if self.layanan.satuan == Layanan.Satuan.KILOGRAM:
+                if self.berat_aktual is not None:
+                    self.jumlah = self.berat_aktual
+                    self.satuan = Layanan.Satuan.KILOGRAM
+                    self.subtotal = self.berat_aktual * self.harga_final
+            else:
+                self.jumlah = Decimal(self.jumlah_barang)
+                self.satuan = self.layanan.satuan
+                self.subtotal = Decimal(self.jumlah_barang) * self.harga_final
+        else:
+            self.subtotal = self.jumlah * self.harga_satuan
+
         super().save(*args, **kwargs)
 
 

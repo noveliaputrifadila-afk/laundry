@@ -105,12 +105,12 @@ def dashboard(request):
     jumlah_pesanan = Pesanan.objects.count()
 
     jumlah_pesanan_menunggu = Pesanan.objects.filter(
-        status=Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI,
+        status=Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
     ).count()
 
     jumlah_pesanan_diproses = Pesanan.objects.exclude(
         status__in=[
-            Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI,
+            Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
             Pesanan.StatusPesanan.DITOLAK,
             Pesanan.StatusPesanan.DIBATALKAN,
             Pesanan.StatusPesanan.SELESAI,
@@ -481,7 +481,7 @@ def tracking_pesanan(request, kode_pesanan):
     )
 
     urutan_status = [
-        Pesanan.StatusPesanan.MENUNGGU_KONFIRMASI,
+        Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
         Pesanan.StatusPesanan.DITERIMA,
         Pesanan.StatusPesanan.MENUNGGU_ANTRIAN,
         Pesanan.StatusPesanan.DICUCI,
