@@ -103,7 +103,7 @@ from .views_notifikasi import (
     notifikasi_hapus_semua_dibaca,
     notifikasi_list,
     notifikasi_tandai_belum_dibaca,
-    notifikasi_tandai_dibaca,
+    notifikasi_is_read,
     notifikasi_tandai_semua_dibaca,
 )
 from .views_penugasan import (
@@ -509,8 +509,8 @@ urlpatterns = [
     ),
     path(
         "notifikasi/<int:pk>/tandai-dibaca/",
-        notifikasi_tandai_dibaca,
-        name="notifikasi_tandai_dibaca",
+        notifikasi_is_read,
+        name="notifikasi_is_read",
     ),
     path(
         "notifikasi/<int:pk>/tandai-belum-dibaca/",

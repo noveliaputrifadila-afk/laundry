@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -575,19 +576,18 @@ def invoice_list(request):
     )
 @role_required([User.Role.PELANGGAN])
 def notifikasi_list(request):
-    notifikasi_list = (
+    notifikasi_queryset = (
         Notifikasi.objects
         .filter(penerima=request.user)
-        .select_related("pesanan")
         .order_by("-created_at")
     )
 
-    jumlah_belum_dibaca = notifikasi_list.filter(
-        sudah_dibaca=False,
+    jumlah_belum_dibaca = notifikasi_queryset.filter(
+        is_read=False,
     ).count()
 
     paginator = Paginator(
-        notifikasi_list,
+        notifikasi_queryset,
         10,
     )
 
@@ -597,6 +597,7 @@ def notifikasi_list(request):
 
     context = {
         "page_obj": page_obj,
+        "notifikasi_list": page_obj.object_list,
         "jumlah_belum_dibaca": jumlah_belum_dibaca,
     }
 
@@ -605,32 +606,22 @@ def notifikasi_list(request):
         "pelanggan/notifikasi/list.html",
         context,
     )
-@role_required([User.Role.PELANGGAN])
+@login_required
 def notifikasi_baca(request, pk):
-    notifikasi = (
-        Notifikasi.objects
-        .filter(
-            pk=pk,
-            penerima=request.user,
-        )
-        .first()
+    notifikasi = get_object_or_404(
+        Notifikasi,
+        pk=pk,
+        penerima=request.user,
     )
 
-    if notifikasi is None:
-        messages.error(
-            request,
-            "Notifikasi tidak ditemukan.",
-        )
-        return redirect(
-            "pelanggan:notifikasi_list"
+    if not notifikasi.is_read:
+        notifikasi.is_read = True
+        notifikasi.save(
+            update_fields=["is_read"]
         )
 
-    notifikasi.tandai_dibaca()
-
-    if notifikasi.url:
-        return redirect(
-            notifikasi.url
-        )
+    if notifikasi.link:
+        return redirect(notifikasi.link)
 
     return redirect(
         "pelanggan:notifikasi_list"
@@ -640,9 +631,9 @@ def notifikasi_baca_semua(request):
     if request.method == "POST":
         Notifikasi.objects.filter(
             penerima=request.user,
-            sudah_dibaca=False,
+            is_read=False,
         ).update(
-            sudah_dibaca=True,
+            is_read=True,
             dibaca_pada=timezone.now(),
             updated_at=timezone.now(),
         )

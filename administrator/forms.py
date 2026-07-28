@@ -1937,11 +1937,11 @@ class UbahStatusPesananForm(
     def get_status_choices(pesanan):
         alur_status = {
             Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN: [
-                Pesanan.StatusPesanan.DITERIMA,
+                Pesanan.StatusPesanan.MENUNGGU_PETUGAS,
                 Pesanan.StatusPesanan.DITOLAK,
                 Pesanan.StatusPesanan.DIBATALKAN,
             ],
-            Pesanan.StatusPesanan.DITERIMA: [
+            Pesanan.StatusPesanan.MENUNGGU_PETUGAS: [
                 Pesanan.StatusPesanan.MENUNGGU_ANTRIAN,
                 Pesanan.StatusPesanan.DIBATALKAN,
             ],

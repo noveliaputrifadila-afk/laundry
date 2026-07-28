@@ -196,7 +196,7 @@
 
     <div class="list-group list-group-flush">
         {% for notifikasi in notifikasi_list %}
-            <div class="list-group-item p-3 {% if not notifikasi.sudah_dibaca %}bg-light{% endif %}">
+            <div class="list-group-item p-3 {% if not notifikasi.is_read %}bg-light{% endif %}">
                 <div class="d-flex align-items-start gap-3">
                     <div class="pt-1">
                         {% if notifikasi.jenis == "pesanan" %}
@@ -219,12 +219,12 @@
                                     href="{% url 'administrator:notifikasi_detail' notifikasi.pk %}"
                                     class="text-decoration-none text-dark"
                                 >
-                                    <span class="{% if not notifikasi.sudah_dibaca %}fw-bold{% else %}fw-semibold{% endif %}">
+                                    <span class="{% if not notifikasi.is_read %}fw-bold{% else %}fw-semibold{% endif %}">
                                         {{ notifikasi.judul }}
                                     </span>
                                 </a>
 
-                                {% if not notifikasi.sudah_dibaca %}
+                                {% if not notifikasi.is_read %}
                                     <span class="badge bg-danger ms-1">
                                         Baru
                                     </span>
@@ -262,7 +262,7 @@
                                     Detail
                                 </a>
 
-                                {% if notifikasi.sudah_dibaca %}
+                                {% if not notifikasi.is_read %}
                                     <form
                                         method="post"
                                         action="{% url 'administrator:notifikasi_tandai_belum_dibaca' notifikasi.pk %}"
@@ -280,7 +280,7 @@
                                 {% else %}
                                     <form
                                         method="post"
-                                        action="{% url 'administrator:notifikasi_tandai_dibaca' notifikasi.pk %}"
+                                        action="{% url 'administrator:notifikasi_is_read' notifikasi.pk %}"
                                     >
                                         {% csrf_token %}
 

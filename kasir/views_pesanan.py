@@ -1,56 +1,89 @@
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Count, Q
-from django.shortcuts import (
-    get_object_or_404,
-    redirect,
-    render,
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from administrator.models import (
+    Notifikasi,
+    Pesanan,
+    RiwayatStatus,
+    User,
 )
 
-from administrator.models import Pesanan, User, RiwayatStatus, Notifikasi
-from django.contrib.auth.decorators import login_required
 from .decorators import kasir_required
-from decimal import Decimal
-from .forms_pesanan import PemeriksaanDetailForm
-from django.contrib import messages
-from django.db import transaction
-from django.views.decorators.http import require_POST
-from .forms_pesanan import PemeriksaanDetailForm
 from .forms_pesanan import (
     DetailPesananFormSet,
+    PemeriksaanDetailForm,
     PesananKasirForm,
 )
+
+from decimal import Decimal
 
 
 
 @login_required
 def pesanan_selesai(request, pk):
-    pesanan = get_object_or_404(Pesanan, pk=pk)
+    pesanan = get_object_or_404(
+        Pesanan,
+        pk=pk,
+    )
 
-    if request.method == "POST":
-        status_lama = pesanan.status
-
-        pesanan.status = Pesanan.StatusPesanan.SELESAI
-        pesanan.diterima_pelanggan = True
-        pesanan.save()
-
-        RiwayatStatus.objects.create(
-            pesanan=pesanan,
-            status_sebelumnya=status_lama,
-            status_baru=Pesanan.StatusPesanan.SELESAI,
-            diubah_oleh=request.user,
-            catatan="Barang telah diterima pelanggan.",
+    if request.method != "POST":
+        return redirect(
+            "kasir:pesanan_detail",
+            pk=pk,
         )
 
-        Notifikasi.objects.create(
-            penerima=pesanan.pelanggan,
-            judul="Laundry Selesai",
-            pesan=f"Pesanan {pesanan.kode_pesanan} telah selesai.",
-            jenis=Notifikasi.JenisNotifikasi.STATUS,
+    if (
+        pesanan.status_pembayaran
+        != Pesanan.StatusPembayaran.LUNAS
+    ):
+        messages.error(
+            request,
+            "Pesanan belum dapat diselesaikan karena pembayaran belum lunas.",
         )
 
-        messages.success(request, "Pesanan berhasil diselesaikan.")
+        return redirect(
+            "kasir:pesanan_detail",
+            pk=pk,
+        )
 
-    return redirect("kasir:pesanan_detail", pk=pk)
+    status_lama = pesanan.status
+
+    pesanan.status = Pesanan.StatusPesanan.SELESAI
+    pesanan.diterima_pelanggan = True
+    pesanan.save()
+
+    RiwayatStatus.objects.create(
+        pesanan=pesanan,
+        status_sebelumnya=status_lama,
+        status_baru=Pesanan.StatusPesanan.SELESAI,
+        diubah_oleh=request.user,
+        catatan="Barang telah diterima pelanggan.",
+    )
+
+    Notifikasi.objects.create(
+        penerima=pesanan.pelanggan,
+        judul="Laundry Selesai",
+        pesan=(
+            f"Pesanan {pesanan.kode_pesanan} "
+            "telah selesai."
+        ),
+        jenis=Notifikasi.JenisNotifikasi.STATUS,
+    )
+
+    messages.success(
+        request,
+        "Pesanan berhasil diselesaikan.",
+    )
+
+    return redirect(
+        "kasir:pesanan_detail",
+        pk=pk,
+    )
 
 @kasir_required
 def pesanan_create(request):
@@ -88,7 +121,7 @@ def pesanan_create(request):
                         pesanan.kasir = None
 
                     pesanan.status = (
-                        Pesanan.StatusPesanan.DITERIMA
+                        Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN
                     )
 
                     pesanan.status_pembayaran = (

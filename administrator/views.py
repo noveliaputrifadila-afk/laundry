@@ -386,7 +386,7 @@ def notifikasi_list(request):
 
 
 @administrator_required
-def notifikasi_tandai_dibaca(request, pk):
+def notifikasi_is_read(request, pk):
     """
     Menandai satu notifikasi sebagai sudah dibaca.
     """
@@ -482,7 +482,7 @@ def tracking_pesanan(request, kode_pesanan):
 
     urutan_status = [
         Pesanan.StatusPesanan.MENUNGGU_PEMERIKSAAN,
-        Pesanan.StatusPesanan.DITERIMA,
+        Pesanan.StatusPesanan.MENUNGGU_PETUGAS,
         Pesanan.StatusPesanan.MENUNGGU_ANTRIAN,
         Pesanan.StatusPesanan.DICUCI,
         Pesanan.StatusPesanan.DIKERINGKAN,

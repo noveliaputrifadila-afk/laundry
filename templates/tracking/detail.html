@@ -38,7 +38,7 @@ Tracking {{ pesanan.kode_pesanan }}
                                     text-bg-success
                                 {% elif pesanan.status == 'dibatalkan' or pesanan.status == 'ditolak' %}
                                     text-bg-danger
-                                {% elif pesanan.status == 'menunggu_konfirmasi' %}
+                                {% elif pesanan.status == 'menunggu_pemeriksaan' %}
                                     text-bg-warning
                                 {% else %}
                                     text-bg-primary

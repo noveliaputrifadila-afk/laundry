@@ -40,7 +40,7 @@
             <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                 <strong>Isi Notifikasi</strong>
 
-                {% if notifikasi.sudah_dibaca %}
+                {% if notifikasi.is_read %}
                     <span class="badge bg-success">
                         Sudah Dibaca
                     </span>
@@ -178,7 +178,7 @@
             </div>
 
             <div class="card-body">
-                {% if notifikasi.sudah_dibaca %}
+                {% if notifikasi.is_read %}
                     <form
                         method="post"
                         action="{% url 'administrator:notifikasi_tandai_belum_dibaca' notifikasi.pk %}"
@@ -197,7 +197,7 @@
                 {% else %}
                     <form
                         method="post"
-                        action="{% url 'administrator:notifikasi_tandai_dibaca' notifikasi.pk %}"
+                        action="{% url 'administrator:notifikasi_is_read' notifikasi.pk %}"
                         class="mb-2"
                     >
                         {% csrf_token %}

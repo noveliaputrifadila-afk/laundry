@@ -205,9 +205,9 @@
     <div class="col-sm-6 col-xl-3">
         <div class="card stat-card">
             <div class="card-body">
-                <div class="stat-label">Menunggu Konfirmasi</div>
+                <div class="stat-label">Menunggu Pemeriksaan</div>
                 <div class="stat-value">
-                    {{ pesanan_menunggu_konfirmasi }}
+                    {{ pesanan_menunggu_pemeriksaan }}
                 </div>
                 <small class="text-muted">Pesanan pelanggan</small>
             </div>
@@ -227,9 +227,9 @@
     </div>
 </div>
 
-{% if pembayaran_menunggu or pesanan_menunggu_konfirmasi %}
+{% if pembayaran_menunggu or pesanan_menunggu_pemeriksaan %}
 <div class="row g-3 mb-4">
-    {% if pesanan_menunggu_konfirmasi %}
+    {% if pesanan_menunggu_pemeriksaan %}
         <div class="col-md-6">
             <div class="alert alert-primary border-0 shadow-sm mb-0">
                 <div class="d-flex align-items-center gap-3">
@@ -237,8 +237,8 @@
 
                     <div>
                         <strong>
-                            {{ pesanan_menunggu_konfirmasi }}
-                            pesanan menunggu konfirmasi.
+                            {{ pesanan_menunggu_pemeriksaan }}
+                            pesanan menunggu pemeriksaan.
                         </strong>
 
                         <div>

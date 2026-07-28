@@ -88,7 +88,7 @@ def notifikasi_detail(request, pk):
     )
 
     if not notifikasi.is_read:
-        notifikasi.tandai_dibaca()
+        notifikasi.is_read()
 
     return render(
         request,
@@ -101,14 +101,14 @@ def notifikasi_detail(request, pk):
 
 @administrator_required
 @require_POST
-def notifikasi_tandai_dibaca(request, pk):
+def notifikasi_is_read(request, pk):
     notifikasi = get_object_or_404(
         Notifikasi,
         pk=pk,
         penerima=request.user,
     )
 
-    notifikasi.tandai_dibaca()
+    notifikasi.is_read()
 
     messages.success(
         request,

@@ -318,7 +318,7 @@
                                     {{ transaksi.get_status_display }}
                                 </span>
 
-                            {% elif transaksi.status == "menunggu_konfirmasi" or transaksi.status == "menunggu_antrian" %}
+                            {% elif transaksi.status == "menunggu_pemeriksaan" or transaksi.status == "menunggu_antrian" %}
                                 <span class="badge bg-warning-subtle text-warning">
                                     {{ transaksi.get_status_display }}
                                 </span>

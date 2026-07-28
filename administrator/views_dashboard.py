@@ -72,7 +72,7 @@ def dashboard(request):
     ).count()
 
     status_proses = [
-        Pesanan.StatusPesanan.DITERIMA,
+        Pesanan.StatusPesanan.MENUNGGU_PETUGAS,
         Pesanan.StatusPesanan.MENUNGGU_ANTRIAN,
         Pesanan.StatusPesanan.DICUCI,
         Pesanan.StatusPesanan.DIKERINGKAN,

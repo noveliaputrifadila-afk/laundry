@@ -241,7 +241,7 @@ def pesanan_terima(request, pk):
         pk=pk,
     )
 
-    if pesanan.status != "menunggu_konfirmasi":
+    if pesanan.status != "menunggu_pemeriksaan":
         messages.warning(
             request,
             "Pesanan ini sudah diproses sebelumnya.",

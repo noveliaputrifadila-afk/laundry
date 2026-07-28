@@ -247,7 +247,7 @@ def pesanan_konfirmasi(request, pk):
                     pesanan.kasir = request.user
 
                 pesanan.status = (
-                    Pesanan.StatusPesanan.DITERIMA
+                    Pesanan.StatusPesanan.MENUNGGU_PETUGAS
                 )
 
                 pesanan.alasan_penolakan = ""

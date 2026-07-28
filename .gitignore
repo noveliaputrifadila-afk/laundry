@@ -1,5 +1,8 @@
-
 __pycache__/
 *.py[cod]
+env/
+venv/
+.env/
+db.sqlite3
 db_local_backup.sqlite3
 db_github_backup.sqlite3
