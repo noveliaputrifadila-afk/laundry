@@ -5,7 +5,7 @@ from django.db import transaction
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-
+from django.urls import reverse
 from administrator.models import (
     Notifikasi,
     Pesanan,
@@ -576,6 +576,7 @@ def pesanan_tolak(request, pk):
     )
 
 @require_POST
+@kasir_required
 @transaction.atomic
 def pesanan_pemeriksaan(request, pk):
     pesanan = get_object_or_404(
@@ -597,6 +598,7 @@ def pesanan_pemeriksaan(request, pk):
             request,
             "Pesanan ini tidak dapat diperiksa pada status sekarang.",
         )
+
         return redirect(
             "kasir:pesanan_detail",
             pk=pesanan.pk,
@@ -612,7 +614,9 @@ def pesanan_pemeriksaan(request, pk):
             prefix=f"detail_{detail.id}",
         )
 
-        forms_pemeriksaan.append((detail, form))
+        forms_pemeriksaan.append(
+            (detail, form)
+        )
 
         if not form.is_valid():
             semua_valid = False
@@ -632,10 +636,13 @@ def pesanan_pemeriksaan(request, pk):
     for detail, form in forms_pemeriksaan:
         form.save()
 
-    pesanan.hitung_total(simpan=False)
+    pesanan.hitung_total(
+        simpan=False
+    )
 
     petugas = (
-        User.objects.filter(
+        User.objects
+        .filter(
             role=User.Role.PETUGAS_LAUNDRY,
             is_active=True,
         )
@@ -692,10 +699,29 @@ def pesanan_pemeriksaan(request, pk):
         status_sebelumnya=status_lama,
         status_baru=pesanan.status,
         diubah_oleh=request.user,
-        catatan="Pemeriksaan barang diselesaikan oleh kasir.",
+        catatan=(
+            "Pemeriksaan barang diselesaikan oleh kasir."
+        ),
     )
 
     if petugas:
+        Notifikasi.objects.create(
+            penerima=petugas,
+            jenis=Notifikasi.JenisNotifikasi.PESANAN,
+            judul="Tugas laundry baru",
+            pesan=(
+                f"Pesanan {pesanan.kode_pesanan} "
+                "telah ditugaskan kepada Anda."
+            ),
+            link=reverse(
+                "petugas:tugas_detail",
+                kwargs={
+                    "pk": pesanan.pk,
+                },
+            ),
+            is_read=False,
+        )
+
         messages.success(
             request,
             (
@@ -704,12 +730,13 @@ def pesanan_pemeriksaan(request, pk):
                 f"{petugas.get_full_name() or petugas.username}."
             ),
         )
+
     else:
         messages.warning(
             request,
             (
-                "Pemeriksaan berhasil disimpan, tetapi belum "
-                "ada petugas laundry yang tersedia."
+                "Pemeriksaan berhasil disimpan, tetapi "
+                "belum ada Petugas Laundry yang tersedia."
             ),
         )
 
@@ -717,4 +744,3 @@ def pesanan_pemeriksaan(request, pk):
         "kasir:pesanan_detail",
         pk=pesanan.pk,
     )
-

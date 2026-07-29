@@ -23,20 +23,25 @@ from .forms import (
     PembayaranPelangganForm,
     PesananPelangganForm,
 )
+from django.urls import reverse
 from .forms_rating import RatingUlasanForm
 
 
 @role_required([User.Role.PELANGGAN])
 def dashboard(request):
-    pesanan_saya = (
+    pesanan_queryset = (
         Pesanan.objects
         .filter(pelanggan=request.user)
         .select_related(
             "metode_pembayaran",
             "petugas_laundry",
+            "promo",
+            "area_layanan",
         )
         .prefetch_related(
+            "detail",
             "detail__layanan",
+            "detail__jenis_barang",
         )
         .order_by("-created_at")
     )
@@ -57,26 +62,56 @@ def dashboard(request):
         Pesanan.StatusPesanan.DALAM_PENGANTARAN,
     ]
 
-    pesanan_terbaru = pesanan_saya[:5]
+    total_pesanan = pesanan_queryset.count()
 
-    context = {
-        "pesanan_terbaru": pesanan_terbaru,
-        "total_pesanan": pesanan_saya.count(),
-        "pesanan_aktif": pesanan_saya.filter(
-            status__in=status_aktif,
-        ).count(),
-        "pesanan_selesai": pesanan_saya.filter(
-            status=Pesanan.StatusPesanan.SELESAI,
-        ).count(),
-        "belum_lunas": pesanan_saya.exclude(
-            status_pembayaran=Pesanan.StatusPembayaran.LUNAS,
-        ).exclude(
+    pesanan_aktif = pesanan_queryset.filter(
+        status__in=status_aktif,
+    ).count()
+
+    pesanan_selesai = pesanan_queryset.filter(
+        status=Pesanan.StatusPesanan.SELESAI,
+    ).count()
+
+    belum_lunas = (
+        pesanan_queryset
+        .exclude(
+            status_pembayaran=(
+                Pesanan.StatusPembayaran.LUNAS
+            )
+        )
+        .exclude(
             status__in=[
                 Pesanan.StatusPesanan.DITOLAK,
                 Pesanan.StatusPesanan.DIBATALKAN,
             ]
-        ).count(),
+        )
+        .count()
+    )
+
+    pesanan_terbaru = pesanan_queryset[:5]
+
+    context = {
+        # Nama variabel terbaru
+        "pesanan_terbaru": pesanan_terbaru,
+        "total_pesanan": total_pesanan,
+        "pesanan_aktif": pesanan_aktif,
+        "pesanan_selesai": pesanan_selesai,
+        "belum_lunas": belum_lunas,
+
+        # Nama cadangan untuk template lama
+        "pesanan_saya": pesanan_queryset,
+        "pesanan_list": pesanan_terbaru,
+        "jumlah_pesanan": total_pesanan,
+        "jumlah_pesanan_aktif": pesanan_aktif,
+        "jumlah_pesanan_selesai": pesanan_selesai,
+        "jumlah_belum_lunas": belum_lunas,
     }
+
+    return render(
+        request,
+        "pelanggan/dashboard.html",
+        context,
+    )
 
     return render(
         request,
@@ -215,6 +250,29 @@ def pesanan_tambah(request):
                     ),
                 )
 
+                kasir_aktif = User.objects.filter(
+                    role=User.Role.KASIR,
+                    is_active=True,
+                )
+
+                link_kasir = reverse(
+                    "kasir:pesanan_detail",
+                    kwargs={"pk": pesanan.pk},
+                )
+
+                for kasir in kasir_aktif:
+                    Notifikasi.objects.create(
+                        penerima=kasir,
+                        jenis=Notifikasi.JenisNotifikasi.PESANAN,
+                        judul="Pesanan baru",
+                        pesan=(
+                            f"Pesanan {pesanan.kode_pesanan} "
+                            "baru dibuat dan perlu diperiksa."
+                        ),
+                        link=link_kasir,
+                        is_read=False,
+                    )
+
             messages.success(
                 request,
                 (
@@ -246,6 +304,8 @@ def pesanan_tambah(request):
         "pelanggan/pesanan/form.html",
         context,
     )
+
+
 
 @role_required([User.Role.PELANGGAN])
 def pesanan_saya(request):
@@ -704,3 +764,4 @@ def beri_rating(request, pk):
         "pelanggan/rating_form.html",
         context,
     )
+

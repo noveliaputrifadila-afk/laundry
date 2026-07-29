@@ -30,6 +30,11 @@ from .views_pelanggan import (
     pelanggan_list,
     pelanggan_register,
 )
+from .views_notifikasi import (
+    notifikasi_baca,
+    notifikasi_baca_semua,
+    notifikasi_list,
+)
 from .views_riwayat import riwayat_transaksi
 
 
@@ -172,6 +177,21 @@ urlpatterns = [
         "riwayat-transaksi/",
         riwayat_transaksi,
         name="riwayat_transaksi",
+    ),
+    path(
+        "notifikasi/",
+        notifikasi_list,
+        name="notifikasi_list",
+    ),
+    path(
+        "notifikasi/<int:pk>/baca/",
+        notifikasi_baca,
+        name="notifikasi_baca",
+    ),
+    path(
+        "notifikasi/baca-semua/",
+        notifikasi_baca_semua,
+        name="notifikasi_baca_semua",
     ),
 
 

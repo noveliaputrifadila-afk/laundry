@@ -170,6 +170,9 @@ TEMPLATES = [
                     "django.contrib.messages."
                     "context_processors.messages"
                 ),
+                (
+                    "pelanggan.context_processors.notifikasi_pelanggan"
+                ),
             ],
         },
     },

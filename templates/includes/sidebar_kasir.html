@@ -161,16 +161,30 @@
                 Akun
             </div>
 
+                <a
+                    href="{% url 'accounts:profile' %}"
+                    class="nav-link
+                    {% if request.resolver_match.namespace == 'accounts' %}
+                        active
+                    {% endif %}"
+                >
+                    <i class="bi bi-person-circle"></i>
+                    <span>Profil Saya</span>
+                </a>
             <a
-                href="{% url 'accounts:profile' %}"
-                class="nav-link
-                {% if request.resolver_match.namespace == 'accounts' %}
-                    active
-                {% endif %}"
-            >
-                <i class="bi bi-person-circle"></i>
-                <span>Profil Saya</span>
-            </a>
+        href="{% url 'kasir:notifikasi_list' %}"
+        class="nav-link d-flex align-items-center"
+    >
+        <i class="bi bi-bell me-2"></i>
+
+        <span>Notifikasi</span>
+
+        {% if jumlah_notifikasi_belum_dibaca > 0 %}
+            <span class="badge bg-danger rounded-pill ms-auto">
+                {{ jumlah_notifikasi_belum_dibaca }}
+            </span>
+        {% endif %}
+    </a>   
         </div>
     </nav>
 </aside>

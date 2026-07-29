@@ -9,6 +9,11 @@ from .views import (
     tugas_list,
     update_status,
 )
+from .views_notifikasi import (
+    notifikasi_baca,
+    notifikasi_baca_semua,
+    notifikasi_list,
+)
 
 
 app_name = "petugas"
@@ -52,6 +57,21 @@ urlpatterns = [
         "kendala/<int:pk>/",
         kendala_detail,
         name="kendala_detail",
+        ),
+        path(
+        "notifikasi/",
+        notifikasi_list,
+        name="notifikasi_list",
+    ),
+    path(
+        "notifikasi/<int:pk>/baca/",
+        notifikasi_baca,
+        name="notifikasi_baca",
+    ),
+    path(
+        "notifikasi/baca-semua/",
+        notifikasi_baca_semua,
+        name="notifikasi_baca_semua",
     ),
 
 ]

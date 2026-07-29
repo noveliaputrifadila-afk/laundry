@@ -88,10 +88,17 @@
 
 <a
     href="{% url 'pelanggan:notifikasi_list' %}"
-    class="nav-link {% if request.resolver_match.url_name == 'notifikasi_list' or request.resolver_match.url_name == 'notifikasi_baca' %}active{% endif %}"
+    class="nav-link d-flex align-items-center"
 >
     <i class="bi bi-bell me-2"></i>
+
     <span>Notifikasi</span>
+
+    {% if jumlah_notifikasi_pelanggan > 0 %}
+        <span class="badge bg-danger rounded-pill ms-auto">
+            {{ jumlah_notifikasi_pelanggan }}
+        </span>
+    {% endif %}
 </a>
 
 </nav>
