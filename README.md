@@ -29,11 +29,10 @@ Aplikasi ini dikembangkan menggunakan framework **Django** untuk memenuhi tugas 
 
 | No. | Nama | NIM | Username GitHub |
 |---:|---|---|---|
-| 1 | Novelia Putri Fadila | 2421400028 | 
-noveliaputrifadila-afk |
+| 1 | Novelia Putri Fadila | 2421400028 | noveliaputrifadila-afk |
 | 2 | Ifatul Hasanah | 2421400067 | ifatul252 |
-| 3 | Amanda Puspita Sari | 2421400029 | `[WAJIB DIISI]` |
-| 4 | Salma Fatih Risqiah | 2421400119 | `[WAJIB DIISI]` |
+| 3 | Amanda Puspita Sari | 2421400029 | amanda933 |
+| 4 | Salma Fatih Risqiah | 2421400119 | salmafatihriskiah-rgb |
 
 ---
 
@@ -43,23 +42,11 @@ Pembagian tugas harus sesuai dengan pekerjaan yang benar-benar dilakukan dan dap
 
 | Nama | Pembagian Tugas |
 |---|---|
-| Amanda Puspita Sari | `[WAJIB DIISI sesuai fitur dan commit yang dikerjakan]` |
-| Ifatul Hasanah | `[WAJIB DIISI sesuai fitur dan commit yang dikerjakan]` |
-| Novelia Putri Fadila | `[WAJIB DIISI sesuai fitur dan commit yang dikerjakan]` |
-| Salma Fatih Risqiah | `[WAJIB DIISI sesuai fitur dan commit yang dikerjakan]` |
+| Novelia Putri Fadila | Menganalisis kebutuhan dan alur aplikasi; merancang database; mengembangkan dan mengintegrasikan sebagian besar modul Administrator, Kasir, Petugas Laundry, dan Pelanggan; memperbaiki error; mengembangkan proses pesanan, pemeriksaan, pembayaran, notifikasi, invoice, dan laporan; mengelola repository GitHub; melakukan pengujian; serta menyusun laporan. |
+| Ifatul Hasanah | Mengembangkan dan menguji modul Pelanggan, meliputi registrasi, dashboard pelanggan, pembuatan pesanan, tracking, pembayaran, invoice, notifikasi, rating, dan ulasan; membantu memperbaiki tampilan halaman pelanggan; aktif membantu mencari penyebab dan solusi ketika terjadi error, ikut berdiskusi dalam menentukan alur dan perbaikan fitur; memberikan tanggapan, masukan, dan pertimbangan terhadap pendapat anggota utama; serta membantu penyuntingan dan pemeriksaan laporan. |
+| Amanda Puspita Sari| Mengikuti diskusi kelompok, memahami gambaran umum aplikasi, memberikan masukan umum terhadap tampilan dan alur penggunaan, serta membantu meninjau hasil akhir aplikasi sebelum demonstrasi. |
+| Salma Fatih Risqiah | Mengikuti diskusi kelompok, memahami alur utama aplikasi, membantu memeriksa kelengkapan dokumentasi dan tampilan laporan, serta mengikuti persiapan demonstrasi. |
 
-Contoh pembagian tugas yang jelas:
-
-- Mengembangkan autentikasi, registrasi pelanggan, dan pembagian hak akses.
-- Mengembangkan dashboard dan CRUD data pengguna.
-- Mengembangkan CRUD kategori layanan, layanan, jenis barang, tarif, promo, metode pembayaran, dan area layanan.
-- Mengembangkan proses pemesanan, pemeriksaan Kasir, dan perhitungan biaya.
-- Mengembangkan pembayaran, verifikasi pembayaran, dan invoice.
-- Mengembangkan modul Petugas Laundry dan pembaruan status pengerjaan.
-- Mengembangkan tracking pesanan dan sistem notifikasi.
-- Mengembangkan laporan, export CSV, pengujian, dan dokumentasi.
-
-> Pembagian tugas harus disesuaikan dengan riwayat commit masing-masing anggota.
 
 ---
 
@@ -67,14 +54,14 @@ Contoh pembagian tugas yang jelas:
 
 Repository aplikasi:
 
-```[https://github.com/noveliaputrifadila-afk/laundry](https://github.com/noveliaputrifadila-afk/laundry)
+```[Repository aplikasi](https://github.com/noveliaputrifadila-afk/laundry)
 
 ```
 
 Riwayat commit:
 
 ```
-[https://github.com/noveliaputrifadila-afk/laundry/commits/main/](https://github.com/noveliaputrifadila-afk/laundry/commits/main/)
+[Riwayat Commit Repository](https://github.com/noveliaputrifadila-afk/laundry/commits/main/)
 ```
 
 
