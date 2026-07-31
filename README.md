@@ -588,12 +588,11 @@ Gunakan akun khusus pengujian yang benar-benar tersedia pada database demonstras
 
 | Role | Username | Password |
 |---|---|---|
-| Administrator | `[WAJIB DIISI]` | `[WAJIB DIISI]` |
-| Kasir | `[WAJIB DIISI]` | `[WAJIB DIISI]` |
-| Petugas Laundry | `[WAJIB DIISI]` | `[WAJIB DIISI]` |
-| Pelanggan | `[WAJIB DIISI]` | `[WAJIB DIISI]` |
+| Administrator | admin | admin123 |
+| Kasir | hasanahmaula | kasir123 |
+| Petugas Laundry | dianasinta | petugasdiana123 |
+| Pelanggan | melastianggraeni | mawarmelati12 |
 
-> Jangan mencantumkan password akun pribadi. Gunakan akun khusus demonstrasi.
 
 ---
 
